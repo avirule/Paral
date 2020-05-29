@@ -9,6 +9,12 @@
       <Content Include="..\.gitignore">
         <Link>.gitignore</Link>
       </Content>
+      <Content Include="bin\Debug\netcoreapp3.1\Test.paral" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Serilog" Version="2.9.0" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     </ItemGroup>
 
 </Project>
