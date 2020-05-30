@@ -16,9 +16,9 @@ namespace Paral.Parsing
 
         public CompoundNode RootNode { get; }
 
-        public Parser(LexicalAnalyzer lexicalAnalyzer)
+        public Parser(Lexer lexer)
         {
-            _Tokens = new Queue<Token>(lexicalAnalyzer.Tokens);
+            _Tokens = new Queue<Token>(lexer.Tokens);
             RootNode = new CompoundNode();
         }
 
@@ -62,9 +62,10 @@ namespace Paral.Parsing
                         {
                             // empty control flow statement (i.e. --> () <-- )
                             return false;
-                        } else if (TryEvaluateNextNode(out node))
+                        }
+                        else if (TryEvaluateNextNode(out node))
                         {
-                            if (!_Tokens.TryDequeue(out nextToken) || nextToken.TokenType != TokenType.ParenthesisClose)
+                            if (!_Tokens.TryDequeue(out nextToken) || (nextToken.TokenType != TokenType.ParenthesisClose))
                             {
                                 ExceptionHelper.Error(token.Location, "Opening parenthesis has no complement closure (missing a ')' somewhere).");
                                 return false;
@@ -127,7 +128,6 @@ namespace Paral.Parsing
                 }
             }
 
-            ExceptionHelper.Error(default, "Parser failed to construct parse tree. This is likely a compiler error.");
             return false;
         }
     }

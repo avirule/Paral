@@ -9,7 +9,7 @@ using Paral.Exceptions;
 
 namespace Paral.Lexing
 {
-    public class LexicalAnalyzer
+    public class Lexer
     {
         private readonly char[] _Data;
         private readonly List<Token> _Tokens;
@@ -20,7 +20,7 @@ namespace Paral.Lexing
 
         public IEnumerable<Token> Tokens => _Tokens;
 
-        public LexicalAnalyzer(char[] data)
+        public Lexer(char[] data)
         {
             _Data = data;
             _StartIndex = _RunIndex = 0;

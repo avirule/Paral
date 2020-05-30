@@ -9,7 +9,23 @@
       <Content Include="..\.gitignore">
         <Link>.gitignore</Link>
       </Content>
+      <Content Include="bin\Debug\netcoreapp3.1\Paral.deps.json" />
+      <Content Include="bin\Debug\netcoreapp3.1\Paral.dll" />
+      <Content Include="bin\Debug\netcoreapp3.1\Paral.exe" />
+      <Content Include="bin\Debug\netcoreapp3.1\Paral.pdb" />
+      <Content Include="bin\Debug\netcoreapp3.1\Paral.runtimeconfig.dev.json" />
+      <Content Include="bin\Debug\netcoreapp3.1\Paral.runtimeconfig.json" />
+      <Content Include="bin\Debug\netcoreapp3.1\Serilog.dll" />
+      <Content Include="bin\Debug\netcoreapp3.1\Serilog.Sinks.Console.dll" />
       <Content Include="bin\Debug\netcoreapp3.1\Test.paral" />
+      <Content Include="bin\Release\netcoreapp3.1\Paral.deps.json" />
+      <Content Include="bin\Release\netcoreapp3.1\Paral.dll" />
+      <Content Include="bin\Release\netcoreapp3.1\Paral.exe" />
+      <Content Include="bin\Release\netcoreapp3.1\Paral.pdb" />
+      <Content Include="bin\Release\netcoreapp3.1\Paral.runtimeconfig.dev.json" />
+      <Content Include="bin\Release\netcoreapp3.1\Paral.runtimeconfig.json" />
+      <Content Include="bin\Release\netcoreapp3.1\Serilog.dll" />
+      <Content Include="bin\Release\netcoreapp3.1\Serilog.Sinks.Console.dll" />
     </ItemGroup>
 
     <ItemGroup>
