@@ -20,7 +20,6 @@ namespace Paral
         DecimalLiteral,
         ControlFlow,
         SingularFlow,
-        Expression,
         NewLine,
         EndOfFile
     }
@@ -73,28 +72,19 @@ namespace Paral
             char character;
             while (!IsEndOfFile(character = Scan()))
             {
+                // reset start index
                 _StartIndex = _RunIndex;
 
                 switch (character)
                 {
                     case '(' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.ControlFlow, character.ToString()));
-                        break;
                     case ')' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.ControlFlow, character.ToString()));
-                        break;
                     case '{' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.ControlFlow, character.ToString()));
-                        break;
                     case '}' when Advance():
                         _Tokens.Add(new Token(_Location, TokenType.ControlFlow, character.ToString()));
                         break;
                     case ';' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.SingularFlow, character.ToString()));
-                        break;
                     case ',' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.SingularFlow, character.ToString()));
-                        break;
                     case '.' when Advance():
                         _Tokens.Add(new Token(_Location, TokenType.SingularFlow, character.ToString()));
                         break;
@@ -103,6 +93,12 @@ namespace Paral
                         break;
                     case '/' when _Data[_RunIndex + 1] == '*':
                         SkipUntilCommentClosure();
+                        break;
+                    case '/' when Advance():
+                    case '*' when Advance():
+                    case '+' when Advance():
+                    case '-' when Advance():
+                        _Tokens.Add(new Token(_Location, TokenType.Operator, character.ToString()));
                         break;
                     case {} when IsWhiteSpace(character):
                         SkipWhiteSpace();
@@ -261,7 +257,22 @@ namespace Paral
             return GatherCurrentSubset();
         }
 
-        private char Scan() => _RunIndex < _Data.Length ? _Data[_RunIndex] : '\0';
+        private char Scan()
+        {
+            if (_RunIndex < _Data.Length)
+            {
+                return _Data[_RunIndex];
+            }
+            else if (_RunIndex == _Data.Length)
+            {
+                return '\0';
+            }
+            else
+            {
+                LogLexerError("Lexer has traversed beyond the EOF token. This is a compiler error.");
+                return (char)255;
+            }
+        }
 
         private bool Advance()
         {
