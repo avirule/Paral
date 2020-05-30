@@ -42,23 +42,25 @@ namespace Paral
         {
             Log.Logger = new LoggerConfiguration().WriteTo.Console(outputTemplate: _DEFAULT_TEMPLATE).CreateLogger();
 
-            Scanner scanner = new Scanner(File.ReadAllText("Test.paral").ToCharArray());
-            scanner.Tokenize();
+            LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(File.ReadAllText("Test.paral").ToCharArray());
+            lexicalAnalyzer.Tokenize();
         }
     }
 
-    public class Scanner
+    public class LexicalAnalyzer
     {
+        private const string _LEXER_ERROR_TEMPLATE = "[Row: {0}, Col: {1}] {2}";
+
         private readonly char[] _Data;
+        private readonly List<Token> _Tokens;
 
         private int _StartIndex;
         private int _RunIndex;
         private Point _Location;
-        private List<Token> _Tokens;
 
         public IReadOnlyList<Token> Tokens => _Tokens;
 
-        public Scanner(char[] data)
+        public LexicalAnalyzer(char[] data)
         {
             _Data = data;
             _StartIndex = _RunIndex = 0;
@@ -68,44 +70,97 @@ namespace Paral
 
         public void Tokenize()
         {
-            while (!IsEndOfFile(Scan()))
+            char character;
+            while (!IsEndOfFile(character = Scan()))
             {
                 _StartIndex = _RunIndex;
 
-                if (IsWhiteSpace(Scan()))
+                switch (character)
                 {
-                    SkipWhiteSpace();
-                }
-                else if (IsNewLine(Scan()))
-                {
-                    SkipNewLine();
-
-                    _Tokens.Add(new Token(_Location, TokenType.EndOfFile, string.Empty));
-                    _Location = new Point(_Location.X + 1, 1);
-                }
-                else if (IsStringLiteralEnclosure(Scan()))
-                {
-                    string str = StringLiteralClosure();
-                    _Tokens.Add(new Token(_Location, TokenType.StringLiteral, str));
-                }
-                else if (IsDigit(Scan()))
-                {
-                    string number = NumericLiteralClosure(out bool isDecimal);
-                    _Tokens.Add(new Token(_Location, isDecimal ? TokenType.DecimalLiteral : TokenType.NumericLiteral, number));
-                }
-                else if (IsAlphanumeric(Scan()))
-                {
-                    _Tokens.Add(new Token(_Location, TokenType.Identifier, AlphanumericClosure()));
-                }
-                else
-                {
-                    Log.Error($"[Row: {_Location.X}, Col: {_Location.Y}] Failed to read token: {Scan()}");
-                    Environment.Exit(-1);
+                    case '(' when Advance():
+                        _Tokens.Add(new Token(_Location, TokenType.ControlFlow, character.ToString()));
+                        break;
+                    case ')' when Advance():
+                        _Tokens.Add(new Token(_Location, TokenType.ControlFlow, character.ToString()));
+                        break;
+                    case '{' when Advance():
+                        _Tokens.Add(new Token(_Location, TokenType.ControlFlow, character.ToString()));
+                        break;
+                    case '}' when Advance():
+                        _Tokens.Add(new Token(_Location, TokenType.ControlFlow, character.ToString()));
+                        break;
+                    case ';' when Advance():
+                        _Tokens.Add(new Token(_Location, TokenType.SingularFlow, character.ToString()));
+                        break;
+                    case ',' when Advance():
+                        _Tokens.Add(new Token(_Location, TokenType.SingularFlow, character.ToString()));
+                        break;
+                    case '.' when Advance():
+                        _Tokens.Add(new Token(_Location, TokenType.SingularFlow, character.ToString()));
+                        break;
+                    case '/' when _Data[_RunIndex + 1] == '/':
+                        SkipLine();
+                        break;
+                    case '/' when _Data[_RunIndex + 1] == '*':
+                        SkipUntilCommentClosure();
+                        break;
+                    case {} when IsWhiteSpace(character):
+                        SkipWhiteSpace();
+                        break;
+                    case {} when IsNewLine(character):
+                        SkipNewLine();
+                        _Tokens.Add(new Token(_Location, TokenType.NewLine, string.Empty));
+                        _Location = new Point(_Location.X + 1, 1); // update location, as we've dropped to a new line
+                        break;
+                    case {} when IsCharacterLiteralEnclosure(character):
+                        _Tokens.Add(new Token(_Location, TokenType.CharacterLiteral, CharacterLiteralClosure()));
+                        break;
+                    case {} when IsStringLiteralEnclosure(character):
+                        _Tokens.Add(new Token(_Location, TokenType.StringLiteral, StringLiteralClosure()));
+                        break;
+                    case {} when IsDigit(character):
+                        string number = NumericLiteralClosure(out bool hasDecimal);
+                        _Tokens.Add(new Token(_Location, hasDecimal ? TokenType.DecimalLiteral : TokenType.NumericLiteral, number));
+                        break;
+                    case {} when IsAlphanumeric(character):
+                        _Tokens.Add(new Token(_Location, TokenType.Identifier, AlphanumericClosure()));
+                        break;
+                    default:
+                        LogLexerError($"Failed to read token: {character}");
+                        break;
                 }
             }
 
             // allocate EOF
             _Tokens.Add(new Token(_Location, TokenType.EndOfFile, "\0"));
+        }
+
+        private void SkipLine()
+        {
+            char character;
+            while (!IsNewLine(character = Scan()) && !IsEndOfFile(character))
+            {
+                Advance();
+            }
+        }
+
+        private void SkipUntilCommentClosure()
+        {
+            char character;
+            while (((character = Scan()) != '*') || (_Data[_RunIndex + 1] != '/'))
+            {
+                if (IsEndOfFile(character))
+                {
+                    LogLexerError("Comment block has no closure.");
+                }
+
+                Advance();
+            }
+
+            // skip the '*'
+            Advance();
+            // and then skip the '/'
+            Advance();
         }
 
         private void SkipWhiteSpace()
@@ -126,37 +181,66 @@ namespace Paral
 
         private string StringLiteralClosure()
         {
-            while (!IsStringLiteralEnclosure(Scan()))
+            Advance(); // advance past current string literal character
+
+            char character;
+            while (!IsStringLiteralEnclosure(character = Scan()))
             {
-                if (IsEndOfFile(Scan()))
+                if (IsEndOfFile(character))
                 {
-                    Log.Error($"[Row: {_Location.X}, Col: {_Location.Y}] Token has no closure: {_Data[_StartIndex]}");
+                    LogLexerError($"Token has no closure: {_Data[_StartIndex]}");
                 }
 
                 Advance();
             }
 
-            return GatherCurrentSubset();
+            string enclosedString = new string(new ArraySegment<char>(_Data, _StartIndex + 1, _RunIndex - _StartIndex - 1));
+
+            Advance(); // move past current string literal closure
+
+            return enclosedString;
         }
 
-        private string NumericLiteralClosure(out bool isDecimal)
+        private string CharacterLiteralClosure()
+        {
+            Advance(); // advance past current char literal closure character
+
+            if (IsCharacterLiteralEnclosure(Scan()))
+            {
+                LogLexerError("Character literal has no value.");
+            }
+
+            string enclosedCharacter = _Data[_RunIndex].ToString();
+            Advance(); // skip current character
+
+            // make sure 2nd encountered char is a character literal closure
+            if (!IsCharacterLiteralEnclosure(Scan()))
+            {
+                LogLexerError("Character literal can only represent a single character. Literal may have no closure.");
+            }
+
+            Advance();
+
+            return enclosedCharacter;
+        }
+
+        private string NumericLiteralClosure(out bool hasDecimal)
         {
             bool decimalEncountered;
-            isDecimal = false;
-
-            while ((decimalEncountered = IsDecimal(Scan())) || IsDigit(Scan()))
+            hasDecimal = false;
+            char character;
+            while ((decimalEncountered = IsDecimal(character = Scan())) || IsDigit(character))
             {
                 if (decimalEncountered)
                 {
                     // second decimal point encountered, error out
-                    if (isDecimal)
+                    if (hasDecimal)
                     {
-                        Log.Information($"[Row: {_Location.X}, Col: {_Location.Y}] Decimal literal can only contain a single decimal point.");
-                        Environment.Exit(-1);
+                        LogLexerError("Decimal literal can only contain a single decimal point.");
                     }
                     else
                     {
-                        isDecimal = true;
+                        hasDecimal = true;
                     }
                 }
 
@@ -168,7 +252,8 @@ namespace Paral
 
         private string AlphanumericClosure()
         {
-            while (IsAlphanumeric(Scan()) || IsDigit(Scan()))
+            char character;
+            while (IsAlphanumeric(character = Scan()) || IsDigit(character))
             {
                 Advance();
             }
@@ -178,10 +263,11 @@ namespace Paral
 
         private char Scan() => _RunIndex < _Data.Length ? _Data[_RunIndex] : '\0';
 
-        private void Advance()
+        private bool Advance()
         {
             _RunIndex++;
             _Location.Y++;
+            return true;
         }
 
         private string GatherCurrentSubset() => new string(new ArraySegment<char>(_Data, _StartIndex, _RunIndex - _StartIndex));
@@ -197,10 +283,16 @@ namespace Paral
         private static bool IsDecimal(char character) => character == '.';
 
         private static bool IsAlphanumeric(char character) =>
-            ((character >= 'A') && (character <= 'Z')) || ((character >= 'a') && (character <= 'z'));
+            ((character >= 'A') && (character <= 'Z')) || ((character >= 'a') && (character <= 'z')) || (character == '_');
 
         private static bool IsCharacterLiteralEnclosure(char character) => character == '\'';
 
         private static bool IsStringLiteralEnclosure(char character) => character == '"';
+
+        private void LogLexerError(string error)
+        {
+            Log.Error(string.Format(_LEXER_ERROR_TEMPLATE, _Location.X, _Location.Y, error));
+            Environment.Exit(-1);
+        }
     }
 }
