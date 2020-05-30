@@ -12,23 +12,19 @@ namespace Paral.Lexing
     public class Lexer
     {
         private readonly char[] _Data;
-        private readonly List<Token> _Tokens;
 
         private int _StartIndex;
         private int _RunIndex;
         private Point _Location;
-
-        public IEnumerable<Token> Tokens => _Tokens;
 
         public Lexer(char[] data)
         {
             _Data = data;
             _StartIndex = _RunIndex = 0;
             _Location = new Point(1, 1);
-            _Tokens = new List<Token>();
         }
 
-        public void Tokenize()
+        public IEnumerable<Token> Tokenize()
         {
             char character;
             while (!IsEndOfFile(character = Scan()))
@@ -39,25 +35,25 @@ namespace Paral.Lexing
                 switch (character)
                 {
                     case '(' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.ParenthesisOpen, character.ToString()));
+                        yield return new Token(_Location, TokenType.ParenthesisOpen, character.ToString());
                         break;
                     case ')' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.ParenthesisClose, character.ToString()));
+                        yield return new Token(_Location, TokenType.ParenthesisClose, character.ToString());
                         break;
                     case '{' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.CurlyBracketOpen, character.ToString()));
+                        yield return new Token(_Location, TokenType.CurlyBracketOpen, character.ToString());
                         break;
                     case '}' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.CurlyBracketClose, character.ToString()));
+                        yield return new Token(_Location, TokenType.CurlyBracketClose, character.ToString());
                         break;
                     case ';' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.StatementClosure, character.ToString()));
+                        yield return new Token(_Location, TokenType.StatementClosure, character.ToString());
                         break;
                     case '.' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.StatementConcat, character.ToString()));
+                        yield return new Token(_Location, TokenType.StatementConcat, character.ToString());
                         break;
                     case ',' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.ArgumentSeparator, character.ToString()));
+                        yield return new Token(_Location, TokenType.ArgumentSeparator, character.ToString());
                         break;
                     case '/' when _Data[_RunIndex + 1] == '/':
                         SkipLine();
@@ -69,7 +65,7 @@ namespace Paral.Lexing
                     case '*' when Advance():
                     case '+' when Advance():
                     case '-' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.Operator, character.ToString()));
+                        yield return new Token(_Location, TokenType.Operator, character.ToString());
                         break;
                     case {} when IsWhiteSpace(character):
                         SkipWhiteSpace();
@@ -79,17 +75,17 @@ namespace Paral.Lexing
                         _Location = new Point(_Location.X + 1, 1); // update location, as we've dropped to a new line
                         break;
                     case {} when IsCharacterLiteralEnclosure(character):
-                        _Tokens.Add(new Token(_Location, TokenType.CharacterLiteral, CharacterLiteralClosure()));
+                        yield return new Token(_Location, TokenType.CharacterLiteral, CharacterLiteralClosure());
                         break;
                     case {} when IsStringLiteralEnclosure(character):
-                        _Tokens.Add(new Token(_Location, TokenType.StringLiteral, StringLiteralClosure()));
+                        yield return new Token(_Location, TokenType.StringLiteral, StringLiteralClosure());
                         break;
                     case {} when IsDigit(character):
                         string number = NumericLiteralClosure(out bool hasDecimal);
-                        _Tokens.Add(new Token(_Location, hasDecimal ? TokenType.DecimalLiteral : TokenType.NumericLiteral, number));
+                        yield return new Token(_Location, hasDecimal ? TokenType.DecimalLiteral : TokenType.NumericLiteral, number);
                         break;
                     case {} when IsAlphanumeric(character):
-                        _Tokens.Add(new Token(_Location, TokenType.Identifier, AlphanumericClosure()));
+                        yield return new Token(_Location, TokenType.Identifier, AlphanumericClosure());
                         break;
                     default:
                         ExceptionHelper.Error(_Location, $"Failed to read token: {character}");
@@ -98,7 +94,7 @@ namespace Paral.Lexing
             }
 
             // allocate EOF
-            _Tokens.Add(new Token(_Location, TokenType.EndOfFile, "\0"));
+            yield return new Token(_Location, TokenType.EndOfFile, "\0");
         }
 
         private void SkipLine()

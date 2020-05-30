@@ -18,7 +18,6 @@ namespace Paral
         private readonly Lexer _Lexer;
         private readonly Parser _Parser;
 
-        public TimeSpan LexerTime { get; private set; }
         public TimeSpan ParserTime { get; private set; }
         public TimeSpan CompileTime { get; private set; }
 
@@ -42,19 +41,13 @@ namespace Paral
         {
             _Stopwatch.Restart();
 
-            _Lexer.Tokenize();
-
-            LexerTime = _Stopwatch.Elapsed;
-
-            _Stopwatch.Restart();
-
             _Parser.Parse();
 
             ParserTime = _Stopwatch.Elapsed;
 
             _Stopwatch.Stop();
 
-            CompileTime = LexerTime + ParserTime;
+            CompileTime = ParserTime;
         }
     }
 }
