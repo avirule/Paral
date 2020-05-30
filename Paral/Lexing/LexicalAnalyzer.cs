@@ -3,16 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using Serilog;
+using Paral.Exceptions;
 
 #endregion
 
-namespace Paral
+namespace Paral.Lexing
 {
     public class LexicalAnalyzer
     {
-        private const string _LEXER_ERROR_TEMPLATE = "[Row: {0}, Col: {1}] {2}";
-
         private readonly char[] _Data;
         private readonly List<Token> _Tokens;
 
@@ -20,7 +18,7 @@ namespace Paral
         private int _RunIndex;
         private Point _Location;
 
-        public IReadOnlyList<Token> Tokens => _Tokens;
+        public IEnumerable<Token> Tokens => _Tokens;
 
         public LexicalAnalyzer(char[] data)
         {
@@ -41,15 +39,25 @@ namespace Paral
                 switch (character)
                 {
                     case '(' when Advance():
+                        _Tokens.Add(new Token(_Location, TokenType.ParenthesisOpen, character.ToString()));
+                        break;
                     case ')' when Advance():
+                        _Tokens.Add(new Token(_Location, TokenType.ParenthesisClose, character.ToString()));
+                        break;
                     case '{' when Advance():
+                        _Tokens.Add(new Token(_Location, TokenType.CurlyBracketOpen, character.ToString()));
+                        break;
                     case '}' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.ControlFlow, character.ToString()));
+                        _Tokens.Add(new Token(_Location, TokenType.CurlyBracketClose, character.ToString()));
                         break;
                     case ';' when Advance():
-                    case ',' when Advance():
+                        _Tokens.Add(new Token(_Location, TokenType.StatementClosure, character.ToString()));
+                        break;
                     case '.' when Advance():
-                        _Tokens.Add(new Token(_Location, TokenType.SingularFlow, character.ToString()));
+                        _Tokens.Add(new Token(_Location, TokenType.StatementConcat, character.ToString()));
+                        break;
+                    case ',' when Advance():
+                        _Tokens.Add(new Token(_Location, TokenType.ArgumentSeparator, character.ToString()));
                         break;
                     case '/' when _Data[_RunIndex + 1] == '/':
                         SkipLine();
@@ -68,7 +76,6 @@ namespace Paral
                         break;
                     case {} when IsNewLine(character):
                         SkipNewLine();
-                        _Tokens.Add(new Token(_Location, TokenType.NewLine, string.Empty));
                         _Location = new Point(_Location.X + 1, 1); // update location, as we've dropped to a new line
                         break;
                     case {} when IsCharacterLiteralEnclosure(character):
@@ -85,7 +92,7 @@ namespace Paral
                         _Tokens.Add(new Token(_Location, TokenType.Identifier, AlphanumericClosure()));
                         break;
                     default:
-                        LogLexerError($"Failed to read token: {character}");
+                        ExceptionHelper.Error(_Location, $"Failed to read token: {character}");
                         break;
                 }
             }
@@ -110,7 +117,7 @@ namespace Paral
             {
                 if (IsEndOfFile(character))
                 {
-                    LogLexerError("Comment block has no closure.");
+                    ExceptionHelper.Error(_Location, "Comment block has no closure.");
                 }
 
                 Advance();
@@ -147,7 +154,7 @@ namespace Paral
             {
                 if (IsEndOfFile(character))
                 {
-                    LogLexerError($"Token has no closure: {_Data[_StartIndex]}");
+                    ExceptionHelper.Error(_Location, $"Value has no closure: {_Data[_StartIndex]}");
                 }
 
                 Advance();
@@ -166,7 +173,7 @@ namespace Paral
 
             if (IsCharacterLiteralEnclosure(Scan()))
             {
-                LogLexerError("Character literal has no value.");
+                ExceptionHelper.Error(_Location, "Character literal has no value.");
             }
 
             string enclosedCharacter = _Data[_RunIndex].ToString();
@@ -175,7 +182,7 @@ namespace Paral
             // make sure 2nd encountered char is a character literal closure
             if (!IsCharacterLiteralEnclosure(Scan()))
             {
-                LogLexerError("Character literal can only represent a single character. Literal may have no closure.");
+                ExceptionHelper.Error(_Location, "Character literal can only represent a single character. Literal may have no closure.");
             }
 
             Advance();
@@ -195,7 +202,7 @@ namespace Paral
                     // second decimal point encountered, error out
                     if (hasDecimal)
                     {
-                        LogLexerError("Decimal literal can only contain a single decimal point.");
+                        ExceptionHelper.Error(_Location, "Decimal literal can only contain a single decimal point.");
                     }
                     else
                     {
@@ -232,7 +239,7 @@ namespace Paral
             }
             else
             {
-                LogLexerError("Lexer has traversed beyond the EOF token. This is a compiler error.");
+                ExceptionHelper.Error(_Location, "Lexer has traversed beyond the EOF token. This is a compiler error.");
                 return (char)255;
             }
         }
@@ -262,11 +269,5 @@ namespace Paral
         private static bool IsCharacterLiteralEnclosure(char character) => character == '\'';
 
         private static bool IsStringLiteralEnclosure(char character) => character == '"';
-
-        private void LogLexerError(string error)
-        {
-            Log.Error(string.Format(_LEXER_ERROR_TEMPLATE, _Location.X, _Location.Y, error));
-            Environment.Exit(-1);
-        }
     }
 }

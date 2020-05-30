@@ -4,7 +4,7 @@ using System.Drawing;
 
 #endregion
 
-namespace Paral
+namespace Paral.Lexing
 {
     public enum TokenType
     {
@@ -14,9 +14,13 @@ namespace Paral
         StringLiteral,
         NumericLiteral,
         DecimalLiteral,
-        ControlFlow,
-        SingularFlow,
-        NewLine,
+        CurlyBracketOpen,
+        CurlyBracketClose,
+        ParenthesisOpen,
+        ParenthesisClose,
+        StatementClosure,
+        StatementConcat,
+        ArgumentSeparator,
         EndOfFile
     }
 

@@ -1,6 +1,8 @@
 ﻿#region
 
 using System.IO;
+using Paral.Lexing;
+using Paral.Parsing;
 using Serilog;
 
 #endregion
@@ -17,6 +19,9 @@ namespace Paral
 
             LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(File.ReadAllText("Test.paral").ToCharArray());
             lexicalAnalyzer.Tokenize();
+
+            Parser parser = new Parser(lexicalAnalyzer);
+            parser.Parse();
         }
     }
 }
