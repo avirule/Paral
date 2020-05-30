@@ -1,6 +1,5 @@
 ﻿#region
 
-using System.Drawing;
 using System.IO;
 using Serilog;
 
@@ -8,15 +7,6 @@ using Serilog;
 
 namespace Paral
 {
-    public class Token
-    {
-        public Point Location { get; }
-        public TokenType TokenType { get; }
-        public string Value { get; }
-
-        public Token(Point location, TokenType tokenType, string value) => (Location, TokenType, Value) = (location, tokenType, value);
-    }
-
     internal class Program
     {
         private const string _DEFAULT_TEMPLATE = "{Timestamp:MM/dd/yy-HH:mm:ss} | {Level:u3} | {Message}\r\n";
