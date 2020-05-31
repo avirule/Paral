@@ -8,15 +8,16 @@ namespace Paral
 {
     public class RuntimeType
     {
-        public Guid TypeID { get; }
-        public string FriendlyName { get; }
+        public Guid ID { get; }
+        public string Name { get; }
 
-        public RuntimeType(string friendlyName)
+        public RuntimeType(string name)
         {
-            TypeID = Guid.NewGuid();
-            FriendlyName = friendlyName;
+            // todo get typeid from global table
+            ID = Guid.NewGuid();
+            Name = name;
         }
 
-        public override int GetHashCode() => TypeID.GetHashCode();
+        public override int GetHashCode() => ID.GetHashCode();
     }
 }

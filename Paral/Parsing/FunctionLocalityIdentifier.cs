@@ -2,7 +2,7 @@ namespace Paral.Parsing
 {
     public enum FunctionLocalityIdentifier
     {
-        Public,
-        Private
+        Public = 1,
+        Private = 2
     }
 }

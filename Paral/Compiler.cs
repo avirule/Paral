@@ -3,7 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using Paral.Lexing;
+using System.Threading.Tasks;
 using Paral.Parsing;
 using Serilog;
 
@@ -15,7 +15,6 @@ namespace Paral
     {
         private readonly Stopwatch _Stopwatch;
         private readonly string _FilePath;
-        private readonly Lexer _Lexer;
         private readonly Parser _Parser;
 
         public TimeSpan ParserTime { get; private set; }
@@ -31,17 +30,14 @@ namespace Paral
 
             _Stopwatch = new Stopwatch();
             _FilePath = filePath;
-
-            string data = File.ReadAllText(_FilePath);
-           // _Lexer = new Lexer(data.ToCharArray());
-            //_Parser = new Parser(_Lexer);
+            _Parser = new Parser(File.OpenRead(_FilePath));
         }
 
-        public void Compile()
+        public async Task Compile()
         {
             _Stopwatch.Restart();
 
-            _Parser.Parse();
+            await _Parser.Parse();
 
             ParserTime = _Stopwatch.Elapsed;
 

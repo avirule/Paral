@@ -245,6 +245,8 @@ namespace Paral.Lexing
                 _EndOfFile = true;
             }
 
+            _Location.X++;
+
             return true;
         }
 

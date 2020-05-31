@@ -1,11 +1,6 @@
 ﻿#region
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.VisualBasic;
-using Paral.Lexing;
 using Serilog;
 
 #endregion
@@ -21,23 +16,13 @@ namespace Paral
         {
             Log.Logger = new LoggerConfiguration().WriteTo.Console(outputTemplate: _DEFAULT_TEMPLATE).CreateLogger();
 
+            Compiler compiler = new Compiler(_FILE_NAME);
+            await compiler.Compile();
 
-            FileStream fs = File.OpenRead(_FILE_NAME);
-            Lexer lexer = new Lexer(fs);
-            List<Token> output = new List<Token>();
-            await foreach (Token token in lexer.Tokenize())
-            {
-                output.Add(token);
-            }
-
-
-            //Compiler compiler = new Compiler(_FILE_NAME);
-            //compiler.Compile();
-
-            // Log.Information
-            // (
-            //     $"Compiled file \"{_FILE_NAME}\" in (parser: {compiler.ParserTime.TotalMilliseconds:0.00}ms, overall: {compiler.CompileTime.TotalMilliseconds:0.00}ms)."
-            // );
+            Log.Information
+            (
+                $"Compiled file \"{_FILE_NAME}\" in (parser: {compiler.ParserTime.TotalMilliseconds:0.00}ms, overall: {compiler.CompileTime.TotalMilliseconds:0.00}ms)."
+            );
         }
     }
 }
