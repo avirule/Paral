@@ -33,8 +33,8 @@ namespace Paral
             _FilePath = filePath;
 
             string data = File.ReadAllText(_FilePath);
-            _Lexer = new Lexer(data.ToCharArray());
-            _Parser = new Parser(_Lexer);
+           // _Lexer = new Lexer(data.ToCharArray());
+            //_Parser = new Parser(_Lexer);
         }
 
         public void Compile()

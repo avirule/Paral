@@ -12,6 +12,11 @@ namespace Paral.Parsing
 {
     public class Parser
     {
+        private static readonly HashSet<string> LocalityIdentifiers = new HashSet<string>
+        {
+            "public", "private"
+        };
+
         private readonly Lexer _Lexer;
 
         private Queue<Token> _Tokens;
@@ -27,7 +32,13 @@ namespace Paral.Parsing
 
         public void Parse()
         {
-            _Tokens = new Queue<Token>(_Lexer.Tokenize());
+
+
+
+
+            return;
+
+            //_Tokens = new Queue<Token>(_Lexer.Tokenize());
 
             while (TryEvaluateNextNode(out Node node))
             {
@@ -44,17 +55,27 @@ namespace Paral.Parsing
                 return false;
             }
 
-            switch (token.TokenType)
+            switch (token.Type)
             {
                 case TokenType.Identifier:
                 {
-                    if (!_Tokens.TryDequeue(out Token nextToken))
+                    if (LocalityIdentifiers.Contains(token.Value))
                     {
-                        ExceptionHelper.Error(token.Location, "Identifier must have postceding token.");
-                        return false;
+                        if (!_Tokens.TryDequeue(out Token typeToken) || typeToken.Type != TokenType.Identifier)
+                        {
+                            ExceptionHelper.Error(token.Location, $"Locality identifier must be followed by type identifier.");
+                            return false;
+                        }
+                        else if (!_Tokens.TryDequeue(out Token nameToken) || nameToken.Type != TokenType.Identifier)
+                        {
+                            ExceptionHelper.Error(typeToken.Location, $"Type identifier must be followed by function name.");
+                            return false;
+                        }
+                    } else if (/* todo process variable declaration */ false ) {}
+                    else
+                    {
+                        ExceptionHelper.Error(token.Location, $"Invalid identifier \"{token.Value}\" encountered.");
                     }
-
-                    switch (nextToken.TokenType) { }
 
                     break;
                 }
@@ -64,25 +85,24 @@ namespace Paral.Parsing
                     break;
                 case TokenType.ParenthesisOpen:
                 {
-                    if (_Tokens.TryPeek(out Token nextToken)
-                        && (nextToken.TokenType == TokenType.ParenthesisClose)
-                        && _Tokens.TryDequeue(out nextToken))
+                    if ( // check for empty control flow (i.e. '()'  )
+                        (_Tokens.TryPeek(out Token nextToken)
+                         && (nextToken.Type == TokenType.ParenthesisClose)
+                         && _Tokens.TryDequeue(out nextToken))
+                        // general catch for failed evaluation
+                        // remark: error should've been thrown within the function
+                        || !TryEvaluateNextNode(out node))
                     {
                         // empty control flow statement (i.e. --> () <-- )
                         return false;
                     }
-                    else if (TryEvaluateNextNode(out node))
+                    else if (!_Tokens.TryDequeue(out nextToken) || (nextToken.Type != TokenType.ParenthesisClose))
                     {
-                        if (!_Tokens.TryDequeue(out nextToken) || (nextToken.TokenType != TokenType.ParenthesisClose))
-                        {
-                            ExceptionHelper.Error(token.Location, "Opening parenthesis has no complement closure (missing a ')' somewhere).");
-                            return false;
-                        }
-
-                        return true;
+                        ExceptionHelper.Error(token.Location, "Opening parenthesis has no complement closure (missing a ')' somewhere).");
+                        return false;
                     }
 
-                    break;
+                    return true;
                 }
                 case TokenType.CurlyBracketClose:
                 case TokenType.ParenthesisClose:
@@ -101,7 +121,7 @@ namespace Paral.Parsing
                         return false;
                     }
 
-                    switch (nextToken.TokenType)
+                    switch (nextToken.Type)
                     {
                         case TokenType.Operator when _Tokens.TryDequeue(out nextToken):
                             if (TryEvaluateNextNode(out Node nextNode))
@@ -111,14 +131,14 @@ namespace Paral.Parsing
                             }
 
                             return false;
-                        case TokenType.ParenthesisClose:
-                        case TokenType.StatementClosure when _Tokens.TryDequeue(out nextToken):
+                        case TokenType.ParenthesisClose: // if it's a closure paren, it should be consumed further up the stack
+                        case TokenType.StatementClosure when _Tokens.TryDequeue(out nextToken): // consume closing semicolon
                             node = new Node(token);
                             return true;
                         default:
-                            Debug.Assert(nextToken != null, "Token should have been checked in preceding control flow.");
+                            Debug.Assert(nextToken != null, "Token should have been checked notnull in preceding control flow.");
 
-                            ExceptionHelper.Error(token.Location, $"Invalid postceding token type: {nextToken.TokenType}.");
+                            ExceptionHelper.Error(token.Location, $"Invalid postceding token type: {nextToken.Type}.");
                             return false;
                     }
                 }

@@ -27,9 +27,9 @@ namespace Paral.Lexing
     public class Token
     {
         public Point Location { get; }
-        public TokenType TokenType { get; }
+        public TokenType Type { get; }
         public string Value { get; }
 
-        public Token(Point location, TokenType tokenType, string value) => (Location, TokenType, Value) = (location, tokenType, value);
+        public Token(Point location, TokenType tokenType, string value) => (Location, Type, Value) = (location, tokenType, value);
     }
 }
