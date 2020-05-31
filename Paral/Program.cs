@@ -21,7 +21,7 @@ namespace Paral
 
             Log.Information
             (
-                $"Compiled file \"{_FILE_NAME}\" in (parser: {compiler.ParserTime.TotalMilliseconds:0.00}ms, overall: {compiler.CompileTime.TotalMilliseconds:0.00}ms)."
+                $"Compiled file \"{_FILE_NAME}\" in {compiler.CompileTime.TotalMilliseconds:0.00}ms (parser: {compiler.ParserTime.TotalMilliseconds:0.00}ms)."
             );
         }
     }

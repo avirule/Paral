@@ -1,6 +1,7 @@
 #region
 
 using System.Collections.Generic;
+using System.Drawing;
 using Paral.Exceptions;
 
 #endregion
@@ -18,7 +19,7 @@ namespace Paral
             {
                 if (!DeclaredTypes.Contains(usedType))
                 {
-                    ExceptionHelper.Error(default, $"Type \"{usedType}\" is invalid.");
+                    ExceptionHelper.Error(Point.Empty, $"Type \"{usedType}\" is invalid.");
                     return false;
                 }
             }
