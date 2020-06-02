@@ -29,8 +29,8 @@ namespace Paral.Exceptions
 
         private static bool IsValuedToken(Token token) => token.Type switch
         {
-            TokenType.EndOfFile => false,
-            _ => true
+            TokenType.Identifier => true,
+            _ => false
         };
     }
 }

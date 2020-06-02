@@ -7,7 +7,7 @@ using Paral.Lexing;
 
 namespace Paral.Parsing.Nodes
 {
-    public class ArgumentNode : Node
+    public class VariableNode : Node
     {
         public RuntimeType Type { get; private set; }
         public string Name { get; private set; }
@@ -22,6 +22,7 @@ namespace Paral.Parsing.Nodes
                 }
                 else
                 {
+                    Location = token.Location;
                     Type = new RuntimeType(token.Value);
                     TypeChecker.UsedTypes.Add(Type);
                 }
@@ -37,14 +38,10 @@ namespace Paral.Parsing.Nodes
                     Name = token.Value;
                     Complete = true;
                 }
-            }
-            else if (Complete)
-            {
-                ExceptionHelper.Error(token, "Received invalid argument token (are you missing a parenthesis closure?).");
-            }
+            }is
             else
             {
-                ExceptionHelper.Error(token, "Compiler has reached invalid control flow path. This is likely a compiler error.");
+                ExceptionHelper.Error(token, "Received invalid token.");
             }
         }
     }

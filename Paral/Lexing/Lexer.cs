@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Paral.Exceptions;
 
 #endregion
@@ -13,81 +12,80 @@ namespace Paral.Lexing
 {
     public class Lexer
     {
-        private readonly Stream _Input;
-        private readonly byte[] _CurrentData;
+        private readonly StreamReader _Input;
 
-        private bool _EndOfFile;
+        private char[] _CurrentData;
         private Point _Location;
+        private int _Index;
 
         public Lexer(Stream stream)
         {
-            _Input = stream;
-            _CurrentData = new byte[2];
-            _EndOfFile = false;
+            _Input = new StreamReader(stream);
+            _CurrentData = new char[stream.Length];
             _Location = new Point(1, 1);
+            _Index = 0;
         }
 
         public async IAsyncEnumerable<Token> Tokenize()
         {
-            await Advance();
+            _CurrentData = (await _Input.ReadToEndAsync()).ToCharArray();
 
             char character;
             while (!IsEndOfFile(character = Scan()))
             {
                 switch (character)
                 {
-                    case '(' when await Advance():
+                    case '(' when Advance():
                         yield return new Token(_Location, TokenType.ParenthesisOpen, character.ToString());
                         break;
-                    case ')' when await Advance():
+                    case ')' when Advance():
                         yield return new Token(_Location, TokenType.ParenthesisClose, character.ToString());
                         break;
-                    case '{' when await Advance():
+                    case '{' when Advance():
                         yield return new Token(_Location, TokenType.CurlyBracketOpen, character.ToString());
                         break;
-                    case '}' when await Advance():
+                    case '}' when Advance():
                         yield return new Token(_Location, TokenType.CurlyBracketClose, character.ToString());
                         break;
-                    case ';' when await Advance():
+                    case ';' when Advance():
                         yield return new Token(_Location, TokenType.StatementClosure, character.ToString());
                         break;
-                    case '.' when await Advance():
+                    case '.' when Advance():
                         yield return new Token(_Location, TokenType.StatementConcat, character.ToString());
                         break;
-                    case ',' when await Advance():
+                    case ',' when Advance():
                         yield return new Token(_Location, TokenType.ArgumentSeparator, character.ToString());
                         break;
                     case '/' when ScanAhead() == '/':
-                        await SkipLine();
+                        SkipLine();
                         break;
                     case '/' when ScanAhead() == '*':
-                        await SkipUntilCommentClosure();
+                        SkipUntilCommentClosure();
                         break;
-                    case '/' when await Advance():
-                    case '*' when await Advance():
-                    case '+' when await Advance():
-                    case '-' when await Advance():
+                    case '/' when Advance():
+                    case '*' when Advance():
+                    case '+' when Advance():
+                    case '-' when Advance():
                         yield return new Token(_Location, TokenType.Operator, character.ToString());
                         break;
                     case {} when IsWhiteSpace(character):
-                        await SkipWhiteSpace();
+                        SkipWhiteSpace();
                         break;
                     case {} when IsNewLine(character):
-                        await SkipNewLine();
-                        _Location = new Point(_Location.X + 1, 1); // update location, as we've dropped to a new line
+                        SkipNewLine();
                         break;
                     case {} when IsCharacterLiteralEnclosure(character):
-                        yield return new Token(_Location, TokenType.CharacterLiteral, await CharacterLiteralClosure());
+                        yield return new Token(_Location, TokenType.CharacterLiteral, CharacterLiteralClosure());
                         break;
                     case {} when IsStringLiteralEnclosure(character):
-                        yield return new Token(_Location, TokenType.StringLiteral, await StringLiteralClosure());
+                        yield return new Token(_Location, TokenType.StringLiteral, StringLiteralClosure());
                         break;
                     case {} when IsDigit(character):
-                        (bool hasDecimal, string literal) = await NumericLiteralClosure();
+                        (bool hasDecimal, string literal) = NumericLiteralClosure();
                         yield return new Token(_Location, hasDecimal ? TokenType.DecimalLiteral : TokenType.NumericLiteral, literal);
                         break;
                     case {} when IsAlphanumeric(character):
-                        yield return new Token(_Location, TokenType.Identifier, await AlphanumericClosure());
+                        yield return new Token(_Location, TokenType.Identifier, AlphanumericClosure());
                         break;
                     default:
                         ExceptionHelper.Error(_Location, $"Failed to read token: {character}");
@@ -99,15 +97,15 @@ namespace Paral.Lexing
             yield return new Token(_Location, TokenType.EndOfFile, "\0");
         }
 
-        private async ValueTask SkipLine()
+        private void SkipLine()
         {
             while (!IsNewLine(Scan()) && !IsEndOfFile(Scan()))
             {
-                await Advance();
+                Advance();
             }
         }
 
-        private async ValueTask SkipUntilCommentClosure()
+        private void SkipUntilCommentClosure()
         {
             char character;
             while (((character = Scan()) != '*') || (ScanAhead() != '/'))
@@ -115,36 +113,41 @@ namespace Paral.Lexing
                 if (IsEndOfFile(character))
                 {
                     ExceptionHelper.Error(_Location, "Comment block has no closure.");
+                } else if (IsNewLine(character))
+                {
+                    SkipNewLine();
                 }
 
-                await Advance();
+                Advance();
             }
 
             // skip the '*'
-            await Advance();
+            Advance();
             // and then skip the '/'
-            await Advance();
+            Advance();
         }
 
-        private async ValueTask SkipWhiteSpace()
+        private void SkipWhiteSpace()
         {
             while (IsWhiteSpace(Scan()))
             {
-                await Advance();
+                Advance();
             }
         }
 
-        private async ValueTask SkipNewLine()
+        private void SkipNewLine()
         {
             while (IsNewLine(Scan()))
             {
-                await Advance();
+                Advance();
             }
+
+            _Location = new Point(_Location.X + 1, 1); // update location, as we've dropped to a new line
         }
 
-        private async ValueTask<string> StringLiteralClosure()
+        private string StringLiteralClosure()
         {
-            await Advance(); // advance past current string literal character
+            Advance(); // advance past current string literal character
 
             char character;
             StringBuilder literal = new StringBuilder();
@@ -156,17 +159,17 @@ namespace Paral.Lexing
                 }
 
                 literal.Append(character);
-                await Advance();
+                Advance();
             }
 
-            await Advance(); // move past current string literal closure
+            Advance(); // move past current string literal closure
 
             return literal.ToString();
         }
 
-        private async ValueTask<string> CharacterLiteralClosure()
+        private string CharacterLiteralClosure()
         {
-            await Advance(); // advance past current char literal closure character
+            Advance(); // advance past current char literal closure character
 
             if (IsCharacterLiteralEnclosure(Scan()))
             {
@@ -174,7 +177,7 @@ namespace Paral.Lexing
             }
 
             string literal = Scan().ToString();
-            await Advance(); // skip current character
+            Advance(); // skip current character
 
             // make sure 2nd encountered char is a character literal closure
             if (!IsCharacterLiteralEnclosure(Scan()))
@@ -182,12 +185,12 @@ namespace Paral.Lexing
                 ExceptionHelper.Error(_Location, "Character literal can only represent a single character. Literal may have no closure.");
             }
 
-            await Advance();
+            Advance();
 
             return literal;
         }
 
-        private async ValueTask<(bool, string)> NumericLiteralClosure()
+        private (bool, string) NumericLiteralClosure()
         {
             char character;
             bool decimalEncountered;
@@ -209,44 +212,32 @@ namespace Paral.Lexing
                 }
 
                 literal.Append(character);
-                await Advance();
+                Advance();
             }
 
             return (hasDecimal, literal.ToString());
         }
 
-        private async ValueTask<string> AlphanumericClosure()
+        private string AlphanumericClosure()
         {
             char character;
             StringBuilder literal = new StringBuilder();
             while (IsAlphanumeric(character = Scan()) || IsDigit(character))
             {
                 literal.Append(character);
-                await Advance();
+                Advance();
             }
 
             return literal.ToString();
         }
 
-        private char Scan() => _EndOfFile ? '\0' : (char)_CurrentData[0];
-        private char ScanAhead() => _EndOfFile ? '\0' : (char)_CurrentData[1];
+        private char Scan() => _Index < _CurrentData.Length ? _CurrentData[_Index] : '\0';
+        private char ScanAhead() => (_Index + 1) < _CurrentData.Length ? _CurrentData[_Index + 1] : '\0';
 
-        private async ValueTask<bool> Advance()
+        private bool Advance()
         {
-            int bytesRead = await _Input.ReadAsync(_CurrentData, 0, 2);
-            // position will be incremented 2 when read, so step back once.
-            // remark: this is for look-ahead capability.
-            if (bytesRead > 1)
-            {
-                _Input.Position--;
-            }
-            else if (bytesRead <= 0)
-            {
-                _EndOfFile = true;
-            }
-
+            _Index++;
             _Location.X++;
-
             return true;
         }
 
