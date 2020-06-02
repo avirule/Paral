@@ -9,8 +9,14 @@ namespace Paral.Parsing.Nodes
 {
     public class VariableNode : Node
     {
-        public RuntimeType Type { get; private set; }
+        public RuntimeType? Type { get; private set; }
         public string Name { get; private set; }
+
+        public VariableNode()
+        {
+            Type = null;
+            Name = string.Empty;
+        }
 
         public override void Consume(Token token)
         {
@@ -24,7 +30,6 @@ namespace Paral.Parsing.Nodes
                 {
                     Location = token.Location;
                     Type = new RuntimeType(token.Value);
-                    TypeChecker.UsedTypes.Add(Type);
                 }
             }
             else if (string.IsNullOrEmpty(Name))
@@ -38,7 +43,7 @@ namespace Paral.Parsing.Nodes
                     Name = token.Value;
                     Complete = true;
                 }
-            }is
+            }
             else
             {
                 ExceptionHelper.Error(token, "Received invalid token.");

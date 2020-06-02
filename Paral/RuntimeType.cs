@@ -16,6 +16,8 @@ namespace Paral
             // todo get typeid from global table
             ID = Guid.NewGuid();
             Name = name;
+
+            TypeChecker.UsedTypes.Add(this);
         }
 
         public override int GetHashCode() => ID.GetHashCode();

@@ -9,10 +9,18 @@ namespace Paral.Parsing.Nodes
 {
     public class FunctionNode : Node
     {
-        public RuntimeType Type { get; private set; }
+        public RuntimeType? Type { get; private set; }
         public string Name { get; private set; }
-        public CompoundVariablesNode Variables { get; private set; }
-        public CompoundNode Body { get; private set; }
+        public CompoundVariablesNode? Variables { get; private set; }
+        public CompoundNode? Body { get; private set; }
+
+        public FunctionNode()
+        {
+            Type = null;
+            Name = string.Empty;
+            Variables = null;
+            Body = null;
+        }
 
         public override void Consume(Token token)
         {
@@ -26,13 +34,13 @@ namespace Paral.Parsing.Nodes
             }
             else if (Variables == null)
             {
-                Variables = new CompoundVariablesNode(token.Location);
+                AttemptInitializeVariables(token);
             }
             else if (!Variables.Complete)
             {
                 Variables.Consume(token);
             }
-            if (Body == null)
+            else if (Body == null)
             {
                 if (token.Type != TokenType.CurlyBracketOpen)
                 {
@@ -59,7 +67,6 @@ namespace Paral.Parsing.Nodes
             else
             {
                 Type = new RuntimeType(token.Value);
-                TypeChecker.UsedTypes.Add(Type);
             }
         }
 
@@ -74,6 +81,18 @@ namespace Paral.Parsing.Nodes
                 Name = token.Value;
 
                 // todo register function somehow to avoid multiple declarations
+            }
+        }
+
+        private void AttemptInitializeVariables(Token token)
+        {
+            if (token.Type != TokenType.ParenthesisOpen)
+            {
+                ExceptionHelper.Error(token, "Expected opening parenthesis.");
+            }
+            else
+            {
+                Variables = new CompoundVariablesNode(token.Location);
             }
         }
     }
