@@ -14,11 +14,11 @@ namespace Paral.Parsing.Nodes
 
         public RootNode() => _Children = new List<Node>();
 
-        public override void Consume(Token token)
+        protected override bool ConsumeTokenInternal(Token token)
         {
             if ((_Children.Count > 0) && !_Children[^1].Complete)
             {
-                _Children[^1].Consume(token);
+                return _Children[^1].ConsumeToken(token);
             }
             else
             {
@@ -37,6 +37,8 @@ namespace Paral.Parsing.Nodes
                         ExceptionHelper.Error(token, "Expected identifier.");
                         break;
                 }
+
+                return false;
             }
         }
     }

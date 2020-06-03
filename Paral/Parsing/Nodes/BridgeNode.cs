@@ -13,28 +13,22 @@ namespace Paral.Parsing.Nodes
 
         public BridgeNode() => Child = null;
 
-        public override void Consume(Token token)
+        protected override bool ConsumeTokenInternal(Token token)
         {
             if (Child == null)
             {
-                if (Complete)
-                {
-                    // this should never be hit, as a bridge node should only
-                    // ever set Complete when the child is set
-                    ExceptionHelper.Error(token, ExceptionHelper.INVALID_COMPILER_STATE);
-                }
-
                 AttemptInitializeChild(token);
-                Complete = true;
             }
             else if (!Child.Complete)
             {
-                Child.Consume(token);
+                return Child.ConsumeToken(token);
             }
             else
             {
                 ExceptionHelper.Error(token, ExceptionHelper.INVALID_COMPILER_STATE);
             }
+
+            return Child?.Complete ?? false;
         }
 
         protected abstract void AttemptInitializeChild(Token token);

@@ -7,22 +7,26 @@ using Paral.Lexing;
 
 namespace Paral.Parsing.Nodes
 {
-    public class IdentifierNode : BridgeNode
+    public class LabelNode : BridgeNode
     {
-        public string Identifier { get; }
+        public string Label { get; }
 
-        public IdentifierNode(string identifier) => Identifier = identifier;
+        public LabelNode(string identifier) => Label = identifier;
 
         protected override void AttemptInitializeChild(Token token)
         {
             switch (token.Type)
             {
+                case TokenType.ParenthesisOpen:
+                    // todo create compound node
+                    break;
                 case TokenType.StatementClosure:
-
+                case TokenType.ArgumentSeparator:
+                    Child = new ClosureNode();
                     break;
                 default:
                     ExceptionHelper.Error(token, "Expected statement closure.");
-
+                    break;
             }
         }
     }

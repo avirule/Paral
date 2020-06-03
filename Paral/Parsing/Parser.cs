@@ -26,7 +26,7 @@ namespace Paral.Parsing
         {
             await foreach (Token token in _Lexer.Tokenize())
             {
-                RootNode.Consume(token);
+                RootNode.ConsumeToken(token);
             }
         }
     }

@@ -18,7 +18,7 @@ namespace Paral.Parsing.Nodes
             switch (token.Type)
             {
                 case TokenType.Identifier:
-                    Child = new IdentifierNode(token.Value);
+                    Child = new LabelNode(token.Value);
                     break;
                 default:
                     ExceptionHelper.Error(token, "Expected identifier.");
