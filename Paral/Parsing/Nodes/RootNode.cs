@@ -1,6 +1,5 @@
 #region
 
-using System;
 using System.Collections.Generic;
 using Paral.Exceptions;
 using Paral.Lexing;
@@ -17,7 +16,7 @@ namespace Paral.Parsing.Nodes
 
         public override void Consume(Token token)
         {
-            if (_Children.Count > 0 && !_Children[^1].Complete)
+            if ((_Children.Count > 0) && !_Children[^1].Complete)
             {
                 _Children[^1].Consume(token);
             }

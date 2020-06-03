@@ -113,7 +113,8 @@ namespace Paral.Lexing
                 if (IsEndOfFile(character))
                 {
                     ExceptionHelper.Error(_Location, "Comment block has no closure.");
-                } else if (IsNewLine(character))
+                }
+                else if (IsNewLine(character))
                 {
                     SkipNewLine();
                 }
