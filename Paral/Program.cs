@@ -1,7 +1,6 @@
 ﻿#region
 
 using System.Threading.Tasks;
-using Serilog;
 
 #endregion
 
@@ -9,20 +8,10 @@ namespace Paral
 {
     internal class Program
     {
-        private const string _DEFAULT_TEMPLATE = "{Timestamp:MM/dd/yy-HH:mm:ss} | {Level:u3} | {Message}\r\n";
-        private const string _FILE_NAME = "Test.paral";
-
         private static async Task Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration().WriteTo.Console(outputTemplate: _DEFAULT_TEMPLATE).CreateLogger();
-
-            Compiler compiler = new Compiler(_FILE_NAME);
+            Compiler compiler = new Compiler(args);
             await compiler.Compile();
-
-            Log.Information
-            (
-                $"Compiled file \"{_FILE_NAME}\" in {compiler.CompileTime.TotalMilliseconds:0.00}ms (parser: {compiler.ParserTime.TotalMilliseconds:0.00}ms)."
-            );
         }
     }
 }

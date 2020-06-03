@@ -15,6 +15,12 @@ namespace Paral.Exceptions
         public const string TOKEN_ERROR_TEMPLATE = "[Row: {0}, Col: {1}, {2}] {3}";
         public const string INVALID_COMPILER_STATE = "Compiler has entered invalid control flow.";
 
+        public static void Error(string error)
+        {
+            Log.Error(error);
+            Environment.Exit(-1);
+        }
+
         public static void Error(Point location, string error)
         {
             Log.Error(string.Format(LEXER_ERROR_TEMPLATE, location.X, location.Y, error));
