@@ -7,7 +7,7 @@ using Paral.Lexing;
 
 namespace Paral.Parsing.Nodes
 {
-    public class LocalityNode : BranchNode
+    public class LocalityNode : BridgeNode
     {
         public LocalityIdentifier Locality { get; }
 
@@ -22,7 +22,6 @@ namespace Paral.Parsing.Nodes
             switch (token.Type)
             {
                 case TokenType.Identifier when token.Value.Equals(KeywordHelper.CLASS):
-                    break;
                 case TokenType.Identifier when token.Value.Equals(KeywordHelper.DATA):
                     break;
                 case TokenType.Identifier: // we assume it's a type

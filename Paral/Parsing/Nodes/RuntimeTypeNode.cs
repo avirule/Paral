@@ -7,7 +7,7 @@ using Paral.Lexing;
 
 namespace Paral.Parsing.Nodes
 {
-    public class RuntimeTypeNode : BranchNode
+    public class RuntimeTypeNode : BridgeNode
     {
         public RuntimeType Type { get; }
 

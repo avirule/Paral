@@ -13,6 +13,7 @@ namespace Paral.Exceptions
     {
         public const string LEXER_ERROR_TEMPLATE = "[Row: {0}, Col: {1}] {2}";
         public const string TOKEN_ERROR_TEMPLATE = "[Row: {0}, Col: {1}, {2}] {3}";
+        public const string INVALID_COMPILER_STATE = "Compiler has entered invalid control flow.";
 
         public static void Error(Point location, string error)
         {

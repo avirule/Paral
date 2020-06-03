@@ -7,17 +7,25 @@ using Paral.Lexing;
 
 namespace Paral.Parsing.Nodes
 {
-    public abstract class BranchNode : Node
+    public abstract class BridgeNode : Node
     {
         public Node? Child { get; protected set; }
 
-        public BranchNode() => Child = null;
+        public BridgeNode() => Child = null;
 
         public override void Consume(Token token)
         {
             if (Child == null)
             {
+                if (Complete)
+                {
+                    // this should never be hit, as a bridge node should only
+                    // ever set Complete when the child is set
+                    ExceptionHelper.Error(token, ExceptionHelper.INVALID_COMPILER_STATE);
+                }
+
                 AttemptInitializeChild(token);
+                Complete = true;
             }
             else if (!Child.Complete)
             {
@@ -25,7 +33,7 @@ namespace Paral.Parsing.Nodes
             }
             else
             {
-                ExceptionHelper.Error(token, "Compiler has entered invalid control flow.");
+                ExceptionHelper.Error(token, ExceptionHelper.INVALID_COMPILER_STATE);
             }
         }
 
