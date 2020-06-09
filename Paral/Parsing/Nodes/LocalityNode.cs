@@ -28,7 +28,7 @@ namespace Paral.Parsing.Nodes
                     Child = new RuntimeTypeNode(new RuntimeType(token.Value));
                     break;
                 default:
-                    ExceptionHelper.Error(token, "Expected identifier.");
+                    ExceptionHelper.Error(token, ExceptionHelper.EXPECTED_IDENTIFIER);
                     break;
             }
         }

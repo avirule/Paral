@@ -25,7 +25,7 @@ namespace Paral.Parsing.Nodes
                 switch (token.Type)
                 {
                     case TokenType.Identifier when token.Value.Equals(KeywordHelper.REQUIRES):
-                        // todo code rules for adding namepace requires
+                        // todo code rules for adding namespace requires
                         break;
                     case TokenType.Identifier when token.Value.Equals(KeywordHelper.PUBLIC):
                         _Children.Add(new LocalityNode(LocalityIdentifier.Public));
@@ -34,7 +34,7 @@ namespace Paral.Parsing.Nodes
                         _Children.Add(new LocalityNode(LocalityIdentifier.Private));
                         break;
                     default:
-                        ExceptionHelper.Error(token, "Expected identifier.");
+                        ExceptionHelper.Error(token, ExceptionHelper.EXPECTED_IDENTIFIER);
                         break;
                 }
 

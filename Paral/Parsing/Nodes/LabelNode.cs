@@ -18,7 +18,7 @@ namespace Paral.Parsing.Nodes
             switch (token.Type)
             {
                 case TokenType.ParenthesisOpen:
-                    // todo create compound node
+                    Child = new CompoundArgumentNode();
                     break;
                 case TokenType.StatementClosure:
                 case TokenType.ArgumentSeparator:
