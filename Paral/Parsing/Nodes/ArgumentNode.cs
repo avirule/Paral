@@ -32,7 +32,7 @@ namespace Paral.Parsing.Nodes
                     ExceptionHelper.Error(token, "Expected argument separator.");
                     return false;
                 default:
-                    ExceptionHelper.Error(token, "Invalid token.");
+                    ExceptionHelper.Error(token, "Invalid token at this point.");
                     return false;
             }
         }
