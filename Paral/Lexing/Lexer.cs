@@ -68,6 +68,9 @@ namespace Paral.Lexing
                     case '-' when Advance():
                         yield return new Token(_Location, TokenType.Operator, character.ToString());
                         break;
+                    case '=' when Advance():
+                        yield return new Token(_Location, TokenType.Assigment, character.ToString());
+                        break;
                     case {} when IsWhiteSpace(character):
                         SkipWhiteSpace();
                         break;

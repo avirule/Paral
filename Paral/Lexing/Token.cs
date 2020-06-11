@@ -10,6 +10,7 @@ namespace Paral.Lexing
     {
         Identifier,
         Operator,
+        Assigment,
         CharacterLiteral,
         StringLiteral,
         NumericLiteral,
