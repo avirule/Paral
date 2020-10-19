@@ -1,6 +1,7 @@
 #region
 
 using Paral.Lexing;
+using Paral.Lexing.Tokens;
 
 #endregion
 

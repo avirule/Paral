@@ -3,6 +3,7 @@
 using System;
 using System.Drawing;
 using Paral.Lexing;
+using Paral.Lexing.Tokens;
 using Serilog;
 
 #endregion
@@ -30,15 +31,8 @@ namespace Paral.Exceptions
 
         public static void Error(Token token, string error)
         {
-            Log.Error(string.Format(TOKEN_ERROR_TEMPLATE, token.Location.X, token.Location.Y,
-                IsValuedToken(token) ? $"{token.Type}: {token.Value}" : token.Type.ToString(), error));
+            Log.Error(string.Format(TOKEN_ERROR_TEMPLATE, token.Location.X, token.Location.Y, token.GetType(), error));
             Environment.Exit(-1);
         }
-
-        private static bool IsValuedToken(Token token) => token.Type switch
-        {
-            TokenType.Identifier => true,
-            _ => false
-        };
     }
 }

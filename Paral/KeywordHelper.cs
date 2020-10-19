@@ -2,11 +2,12 @@ namespace Paral
 {
     public static class KeywordHelper
     {
-        public const string PUBLIC = "public";
-        public const string PRIVATE = "private";
         public const string REQUIRES = "requires";
-        public const string CLASS = "class";
-        public const string DATA = "data";
-        public const string ARGUMENTS = "arguments";
+        public const string IMPLEMENTS = "implements";
+        public const string THROWS = "throws";
+        public const string DECLARES = "declares";
+        public const string STRUCT = "struct";
+        public const string RETURNS = "returns";
+        public const string RETURN = "return";
     }
 }

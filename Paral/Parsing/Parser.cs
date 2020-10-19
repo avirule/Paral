@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Paral.Lexing;
+using Paral.Lexing.Tokens;
 using Paral.Parsing.Nodes;
 
 #endregion
@@ -14,20 +15,17 @@ namespace Paral.Parsing
     {
         private readonly Lexer _Lexer;
 
-        public RootNode RootNode { get; }
-
         public Parser(Stream data)
         {
             _Lexer = new Lexer(data);
 
-            RootNode = new RootNode();
         }
 
         public async Task Parse()
         {
             await foreach (Token token in _Lexer.Tokenize())
             {
-                RootNode.ConsumeToken(token);
+
             }
         }
     }

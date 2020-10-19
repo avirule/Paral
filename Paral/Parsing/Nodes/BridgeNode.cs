@@ -2,6 +2,7 @@
 
 using Paral.Exceptions;
 using Paral.Lexing;
+using Paral.Lexing.Tokens;
 
 #endregion
 

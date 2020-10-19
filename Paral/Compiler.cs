@@ -29,7 +29,6 @@ namespace Paral
         {
             _FilePath = String.Empty;
 
-            InitializeLogger();
             ProcessCompilerArguments(args);
             ValidateCompilerArguments();
 
@@ -37,7 +36,7 @@ namespace Paral
             _Parser = new Parser(File.OpenRead(_FilePath));
         }
 
-        private static void InitializeLogger()
+        public static void InitializeLogger()
         {
             Log.Logger = new LoggerConfiguration().WriteTo.Console(outputTemplate: _DEFAULT_TEMPLATE).CreateLogger();
         }

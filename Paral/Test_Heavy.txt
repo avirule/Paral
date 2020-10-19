@@ -1,0 +1,19 @@
+struct FileReader
+{
+    // indicate what interfaces this type implements
+    implements IStream, IBuffer;
+
+    // declares are how you expose methods from the type
+    declares ReadByte() returns i8;
+    declares ReadAllText() returns string;
+    declares StreamPosition returns i32;
+
+    i32 StreamPosition;
+
+    ReadByte() returns i8
+    {
+        throws IOException, BufferOverflowException;
+
+        return (i8)0;
+    }
+}
