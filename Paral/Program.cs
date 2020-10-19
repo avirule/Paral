@@ -1,6 +1,10 @@
 ﻿#region
 
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Paral.Lexing;
 
 #endregion
 
@@ -10,8 +14,10 @@ namespace Paral
     {
         private static async Task Main(string[] args)
         {
-            Compiler compiler = new Compiler(args);
-            await compiler.Compile();
+            Lexer lexer = new Lexer(File.OpenRead("Test.paral"));
+            List<Token> tokens = await lexer.Tokenize().ToListAsync();
+            //Compiler compiler = new Compiler(args);
+            //await compiler.Compile();
         }
     }
 }

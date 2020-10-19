@@ -1,10 +1,14 @@
 #region
 
+using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
-using Paral.Exceptions;
 
 #endregion
 
@@ -12,254 +16,91 @@ namespace Paral.Lexing
 {
     public class Lexer
     {
-        private readonly StreamReader _Input;
+        private readonly PipeReader _PipeReader;
 
-        private char[] _CurrentData;
         private Point _Location;
         private int _Index;
 
         public Lexer(Stream stream)
         {
-            _Input = new StreamReader(stream);
-            _CurrentData = new char[stream.Length];
+            _PipeReader = PipeReader.Create(stream);
             _Location = new Point(1, 1);
             _Index = 0;
         }
 
         public async IAsyncEnumerable<Token> Tokenize()
         {
-            _CurrentData = (await _Input.ReadToEndAsync()).ToCharArray();
+            ReadResult result;
 
-            char character;
-            while (!IsEndOfFile(character = Scan()))
+            while (!(result = await _PipeReader.ReadAsync()).IsCompleted)
             {
-                switch (character)
-                {
-                    case '(' when Advance():
-                        yield return new Token(_Location, TokenType.ParenthesisOpen, character.ToString());
-                        break;
-                    case ')' when Advance():
-                        yield return new Token(_Location, TokenType.ParenthesisClose, character.ToString());
-                        break;
-                    case '{' when Advance():
-                        yield return new Token(_Location, TokenType.CurlyBracketOpen, character.ToString());
-                        break;
-                    case '}' when Advance():
-                        yield return new Token(_Location, TokenType.CurlyBracketClose, character.ToString());
-                        break;
-                    case ';' when Advance():
-                        yield return new Token(_Location, TokenType.StatementClosure, character.ToString());
-                        break;
-                    case '.' when Advance():
-                        yield return new Token(_Location, TokenType.StatementConcat, character.ToString());
-                        break;
-                    case ',' when Advance():
-                        yield return new Token(_Location, TokenType.ArgumentSeparator, character.ToString());
-                        break;
-                    case '/' when ScanAhead() == '/':
-                        SkipLine();
-                        break;
-                    case '/' when ScanAhead() == '*':
-                        SkipUntilCommentClosure();
-                        break;
-                    case '/' when Advance():
-                    case '*' when Advance():
-                    case '+' when Advance():
-                    case '-' when Advance():
-                        yield return new Token(_Location, TokenType.Operator, character.ToString());
-                        break;
-                    case '=' when Advance():
-                        yield return new Token(_Location, TokenType.Assigment, character.ToString());
-                        break;
-                    case {} when IsWhiteSpace(character):
-                        SkipWhiteSpace();
-                        break;
-                    case {} when IsNewLine(character):
-                        SkipNewLine();
-                        break;
-                    case {} when IsCharacterLiteralEnclosure(character):
-                        yield return new Token(_Location, TokenType.CharacterLiteral, CharacterLiteralClosure());
-                        break;
-                    case {} when IsStringLiteralEnclosure(character):
-                        yield return new Token(_Location, TokenType.StringLiteral, StringLiteralClosure());
-                        break;
-                    case {} when IsDigit(character):
-                        (bool hasDecimal, string literal) = NumericLiteralClosure();
-                        yield return new Token(_Location, hasDecimal ? TokenType.DecimalLiteral : TokenType.NumericLiteral, literal);
-                        break;
-                    case {} when IsAlphanumeric(character):
-                        yield return new Token(_Location, TokenType.Identifier, AlphanumericClosure());
-                        break;
-                    default:
-                        ExceptionHelper.Error(_Location, $"Failed to read token: {character}");
-                        break;
-                }
+                ReadOnlySequence<byte> sequence = result.Buffer;
+
+                if (TryReadToken(sequence, out SequencePosition consumed, out Token token)) yield return token;
+
+                _PipeReader.AdvanceTo(consumed, consumed);
             }
 
-            // allocate EOF
             yield return new Token(_Location, TokenType.EndOfFile, "\0");
         }
 
-        private void SkipLine()
+        private bool TryReadToken(ReadOnlySequence<byte> sequence, out SequencePosition consumed, out Token token)
         {
-            while (!IsNewLine(Scan()) && !IsEndOfFile(Scan()))
+            ReadOnlySpan<byte> buffer = sequence.FirstSpan;
+            consumed = sequence.Start;
+            token = default!;
+
+            if (!TryGetRune(buffer, out Rune rune, out int bytesConsumed)) return false;
+
+            consumed = sequence.GetPosition(bytesConsumed);
+
+            if (rune.Equals(RuneHelper.NewLine))
             {
-                Advance();
-            }
-        }
+                NewLine();
 
-        private void SkipUntilCommentClosure()
-        {
-            char character;
-            while (((character = Scan()) != '*') || (ScanAhead() != '/'))
+                return false;
+            }
+            else if (rune.Equals(RuneHelper.Operators.Add)) token = new Token(_Location, TokenType.Operator, rune.ToString());
+            else if (rune.Equals(RuneHelper.Operators.Subtract)) token = new Token(_Location, TokenType.Operator, rune.ToString());
+            else if (rune.Equals(RuneHelper.Operators.Multiply)) token = new Token(_Location, TokenType.Operator, rune.ToString());
+            else if (rune.Equals(RuneHelper.Operators.Divide)) token = new Token(_Location, TokenType.Operator, rune.ToString());
+            else if (Rune.IsLetter(rune))
             {
-                if (IsEndOfFile(character))
-                {
-                    ExceptionHelper.Error(_Location, "Comment block has no closure.");
-                }
-                else if (IsNewLine(character))
-                {
-                    SkipNewLine();
-                }
-
-                Advance();
+                string alphanumeric = CaptureContinuous(buffer, ref bytesConsumed, Rune.IsLetterOrDigit);
+                token = new Token(_Location, TokenType.Identifier, alphanumeric);
+                consumed = sequence.GetPosition(bytesConsumed);
             }
+            else return false;
 
-            // skip the '*'
-            Advance();
-            // and then skip the '/'
-            Advance();
-        }
-
-        private void SkipWhiteSpace()
-        {
-            while (IsWhiteSpace(Scan()))
-            {
-                Advance();
-            }
-        }
-
-        private void SkipNewLine()
-        {
-            while (IsNewLine(Scan()))
-            {
-                Advance();
-            }
-
-            _Location = new Point(_Location.X + 1, 1); // update location, as we've dropped to a new line
-        }
-
-        private string StringLiteralClosure()
-        {
-            Advance(); // advance past current string literal character
-
-            char character;
-            StringBuilder literal = new StringBuilder();
-            while (!IsStringLiteralEnclosure(character = Scan()))
-            {
-                if (IsEndOfFile(character))
-                {
-                    ExceptionHelper.Error(_Location, "String literal has no closure.");
-                }
-
-                literal.Append(character);
-                Advance();
-            }
-
-            Advance(); // move past current string literal closure
-
-            return literal.ToString();
-        }
-
-        private string CharacterLiteralClosure()
-        {
-            Advance(); // advance past current char literal closure character
-
-            if (IsCharacterLiteralEnclosure(Scan()))
-            {
-                ExceptionHelper.Error(_Location, "Character literal has no value.");
-            }
-
-            string literal = Scan().ToString();
-            Advance(); // skip current character
-
-            // make sure 2nd encountered char is a character literal closure
-            if (!IsCharacterLiteralEnclosure(Scan()))
-            {
-                ExceptionHelper.Error(_Location, "Character literal can only represent a single character. Literal may have no closure.");
-            }
-
-            Advance();
-
-            return literal;
-        }
-
-        private (bool, string) NumericLiteralClosure()
-        {
-            char character;
-            bool decimalEncountered;
-            bool hasDecimal = false;
-            StringBuilder literal = new StringBuilder();
-            while ((decimalEncountered = IsDecimal(character = Scan())) || IsDigit(character))
-            {
-                if (decimalEncountered)
-                {
-                    // second decimal point encountered, error out
-                    if (hasDecimal)
-                    {
-                        ExceptionHelper.Error(_Location, "Decimal literal can only contain a single decimal point.");
-                    }
-                    else
-                    {
-                        hasDecimal = true;
-                    }
-                }
-
-                literal.Append(character);
-                Advance();
-            }
-
-            return (hasDecimal, literal.ToString());
-        }
-
-        private string AlphanumericClosure()
-        {
-            char character;
-            StringBuilder literal = new StringBuilder();
-            while (IsAlphanumeric(character = Scan()) || IsDigit(character))
-            {
-                literal.Append(character);
-                Advance();
-            }
-
-            return literal.ToString();
-        }
-
-        private char Scan() => _Index < _CurrentData.Length ? _CurrentData[_Index] : '\0';
-        private char ScanAhead() => (_Index + 1) < _CurrentData.Length ? _CurrentData[_Index + 1] : '\0';
-
-        private bool Advance()
-        {
-            _Index++;
-            _Location.X++;
             return true;
         }
 
-        private static bool IsEndOfFile(char character) => character == '\0';
+        private bool TryGetRune(ReadOnlySpan<byte> buffer, out Rune rune, out int bytesConsumed)
+        {
+            if (Rune.DecodeFromUtf8(buffer, out rune, out bytesConsumed) == OperationStatus.Done)
+            {
+                _Location.X += 1;
 
-        private static bool IsWhiteSpace(char character) => (character == ' ') || (character == '\t');
+                return true;
+            }
+            else return false;
+        }
 
-        private static bool IsNewLine(char character) => (character == '\r') || (character == '\n');
+        private string CaptureContinuous(ReadOnlySpan<byte> buffer, ref int bytesConsumed, Predicate<Rune> condition)
+        {
+            while (TryGetRune(buffer.Slice(bytesConsumed), out Rune rune, out int consumed) && condition(rune))
+            {
+                bytesConsumed += consumed;
+            }
 
-        private static bool IsDigit(char character) => (character >= '0') && (character <= '9');
+            return Encoding.UTF8.GetString(buffer.Slice(0, bytesConsumed));
 
-        private static bool IsDecimal(char character) => character == '.';
+        }
 
-        private static bool IsAlphanumeric(char character) =>
-            ((character >= 'A') && (character <= 'Z')) || ((character >= 'a') && (character <= 'z')) || (character == '_');
-
-        private static bool IsCharacterLiteralEnclosure(char character) => character == '\'';
-
-        private static bool IsStringLiteralEnclosure(char character) => character == '"';
+        private void NewLine()
+        {
+            _Location.Y += 1;
+            _Location.X = 1;
+        }
     }
 }

@@ -1,6 +1,7 @@
 #region
 
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Paral.Lexing;
 using Paral.Parsing.Nodes;
