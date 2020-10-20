@@ -84,6 +84,7 @@ namespace Paral.Lexing
                 token = alphanumeric switch
                 {
                     KeywordHelper.REQUIRES => new KeywordToken(_Location, Keyword.Requires),
+                    KeywordHelper.NAMESPACE => new KeywordToken(_Location, Keyword.Namespace),
                     KeywordHelper.DECLARES => new KeywordToken(_Location, Keyword.Declares),
                     KeywordHelper.IMPLEMENTS => new KeywordToken(_Location, Keyword.Implements),
                     KeywordHelper.THROWS => new KeywordToken(_Location, Keyword.Throws),

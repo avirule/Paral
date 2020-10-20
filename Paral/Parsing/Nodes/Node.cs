@@ -1,5 +1,8 @@
 #region
 
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Paral.Lexing;
 using Paral.Lexing.Tokens;
 
@@ -9,10 +12,28 @@ namespace Paral.Parsing.Nodes
 {
     public abstract class Node
     {
-        public bool Complete { get; private set; }
+        public List<Node> Leaves { get; }
 
-        protected abstract bool ConsumeTokenInternal(Token token);
+        public Node() => Leaves = new List<Node>();
 
-        public bool ConsumeToken(Token token) => Complete = ConsumeTokenInternal(token);
+        public abstract void ConsumeToken(Token token);
+
+        protected bool FindNamespaceNode(string namespaceIdentifier, [NotNullWhen(true)] out NamespaceNode? namespaceNode)
+        {
+            foreach (Node node in Leaves.Where(node => node is NamespaceNode))
+            {
+                namespaceNode = node as NamespaceNode;
+
+                // we've verified given node is of type NamespaceNode, so cast is
+                // valid and variable isn't null
+                if (namespaceNode!.Identifier.Equals(namespaceIdentifier))
+                {
+                    return true;
+                }
+            }
+
+            namespaceNode = default;
+            return false;
+        }
     }
 }

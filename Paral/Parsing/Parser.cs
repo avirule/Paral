@@ -21,16 +21,16 @@ namespace Paral.Parsing
 
         }
 
-        public async Task<ApplicationNode> Parse()
+        public async Task<MasterNode> Parse()
         {
-            ApplicationNode applicationNode = new ApplicationNode();
+            MasterNode masterNode = new MasterNode();
 
             await foreach (Token token in _Lexer.Tokenize())
             {
-                applicationNode.ConsumeToken(token);
+                masterNode.ConsumeToken(token);
             }
 
-            return applicationNode;
+            return masterNode;
         }
     }
 }

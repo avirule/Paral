@@ -1,40 +1,58 @@
+#region
+
 using System.Collections.Generic;
+using System.Linq;
 using Paral.Exceptions;
 using Paral.Lexing.Tokens;
+
+#endregion
+
 
 namespace Paral.Parsing.Nodes
 {
     public class NamespaceNode : Node
     {
-        public List<Token> DescriptionTokens { get; }
+        private readonly List<Token> _IdentifierTokens;
 
-        public NamespaceNode() => DescriptionTokens = new List<Token>();
+        public string Identifier { get; private set; }
 
-        protected override bool ConsumeTokenInternal(Token token)
+        public NamespaceNode(string identifier)
         {
-            switch (token)
+            _IdentifierTokens = new List<Token>();
+            Identifier = identifier;
+        }
+
+        public override void ConsumeToken(Token token)
+        {
+            if (string.IsNullOrEmpty(Identifier))
             {
-                // valid cases
-                case IdentifierToken identifierToken when (DescriptionTokens.Count == 0) || DescriptionTokens[^1] is AccessOperatorToken:
-                    DescriptionTokens.Add(identifierToken);
-                    return false;
-                case AccessOperatorToken accessOperatorToken when DescriptionTokens[^1] is IdentifierToken:
-                    DescriptionTokens.Add(accessOperatorToken);
-                    return false;
-                case TerminatorToken _ when DescriptionTokens[^1] is IdentifierToken: return true;
-                // error cases
-                case IdentifierToken _:
-                    ThrowHelper.Throw(token, "Expected terminator or namespace accessor symbol.");
-                    return false;
-                case AccessOperatorToken _:
-                    ThrowHelper.ThrowExpectedIdentifier(token);
-                    return false;
-                case TerminatorToken _:
-                    ThrowHelper.Throw("Unexpected terminator.");
-                    return false;
-                default:
-                    ThrowHelper.ThrowUnexpectedToken(token);
-                    return false;
+                // parse as namespace identifier
+                switch (token)
+                {
+                    case IdentifierToken identifierToken:
+                        if (_IdentifierTokens.Count == 0) _IdentifierTokens.Add(identifierToken);
+                        else if (_IdentifierTokens[^1] is AccessOperatorToken) _IdentifierTokens.Add(identifierToken);
+                        else ThrowHelper.Throw(identifierToken, "Expected terminator or namespace access operator.");
+
+                        break;
+                    case AccessOperatorToken accessOperatorToken:
+                        if ((_IdentifierTokens.Count > 0) && _IdentifierTokens[^1] is IdentifierToken) _IdentifierTokens.Add(accessOperatorToken);
+                        else ThrowHelper.ThrowExpectedIdentifier(accessOperatorToken);
+
+                        break;
+                    case TerminatorToken terminatorToken:
+                        if ((_IdentifierTokens.Count > 0) && _IdentifierTokens[^1] is IdentifierToken)
+                        {
+                            _IdentifierTokens.Add(terminatorToken);
+                            Identifier = string.Join("::", _IdentifierTokens.Where(_token => _token is IdentifierToken));
+                        }
+                        else ThrowHelper.Throw(terminatorToken, "Unexpected terminator.");
+
+                        break;
+                    default:
+                        ThrowHelper.ThrowUnexpectedToken(token);
+                        break;
+                }
             }
         }
     }
