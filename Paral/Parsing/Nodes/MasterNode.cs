@@ -1,17 +1,26 @@
+#region
+
 using System.Collections.Generic;
 using Paral.Lexing.Tokens;
+
+#endregion
+
 
 namespace Paral.Parsing.Nodes
 {
     public class MasterNode : Node
     {
-        public override void ConsumeToken(Token token)
+        private NamespaceNode? _CurrentNamespace;
+
+        public override void ConsumeToken(Token token) { }
+
+        public void SetCurrentNamespace(Stack<IdentifierToken> identifiers)
         {
-            switch (token)
-            {
-                case KeywordToken keywordToken when keywordToken.Value == Keyword.Namespace:
-                    
-            }
+            IdentifierToken identifier = identifiers.Pop();
+
+            if (FindNamespaceNode(identifier, out _CurrentNamespace))
+                _CurrentNamespace.TryGetNamespaceNodeRecursive(identifiers, out _CurrentNamespace);
+            else AllocateNamespaceNode(identifier).TryGetNamespaceNodeRecursive(identifiers, out _CurrentNamespace);
         }
     }
 }

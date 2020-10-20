@@ -16,8 +16,8 @@ namespace Paral
         {
             Compiler.InitializeLogger();
 
-            Parser parser = new Parser(File.OpenRead("Test_Requires.paral"));
-            ApplicationNode applicationNode = await parser.Parse();
+            Parser parser = new Parser(File.OpenRead("Test.paral"));
+            MasterNode masterNode = await parser.Parse();
         }
     }
 }

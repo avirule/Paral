@@ -4,7 +4,6 @@ namespace Paral.Lexing.Tokens
 {
     public enum Keyword {
         Requires,
-        Namespace,
         Implements,
         Declares,
         Throws,
