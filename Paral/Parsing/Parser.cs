@@ -33,14 +33,14 @@ namespace Paral.Parsing
                     {
                         case IdentifierToken identifierToken:
                             if (namespaceDeclaration.Count == 0) namespaceDeclaration.Add(identifierToken);
-                            else if (namespaceDeclaration[^1] is AccessOperatorToken) namespaceDeclaration.Add(identifierToken);
+                            else if (namespaceDeclaration[^1] is NamespaceAccessorToken) namespaceDeclaration.Add(identifierToken);
                             else ThrowHelper.Throw(identifierToken, "Expected terminator or namespace access operator.");
 
                             break;
-                        case AccessOperatorToken accessOperatorToken:
+                        case NamespaceAccessorToken namespaceAccessorToken:
                             if ((namespaceDeclaration.Count > 0) && namespaceDeclaration[^1] is IdentifierToken)
-                                namespaceDeclaration.Add(accessOperatorToken);
-                            else ThrowHelper.ThrowExpectedIdentifier(accessOperatorToken);
+                                namespaceDeclaration.Add(namespaceAccessorToken);
+                            else ThrowHelper.ThrowExpectedIdentifier(namespaceAccessorToken);
 
                             break;
                         case TerminatorToken terminatorToken:

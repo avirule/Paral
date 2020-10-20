@@ -1,6 +1,7 @@
 #region
 
 using System.Collections.Generic;
+using Paral.Exceptions;
 using Paral.Lexing.Tokens;
 
 #endregion
@@ -12,7 +13,11 @@ namespace Paral.Parsing.Nodes
     {
         private NamespaceNode? _CurrentNamespace;
 
-        public override void ConsumeToken(Token token) { }
+        public override void ConsumeToken(Token token)
+        {
+            if (_CurrentNamespace is null) ThrowHelper.Throw(token, "Namespace has not been declared for scope.");
+            else _CurrentNamespace.ConsumeToken(token);
+        }
 
         public void SetCurrentNamespace(Stack<IdentifierToken> identifiers)
         {

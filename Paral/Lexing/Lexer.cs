@@ -9,6 +9,7 @@ using System.IO.Pipelines;
 using System.Text;
 using Paral.Exceptions;
 using Paral.Lexing.Tokens;
+using Paral.Lexing.Tokens.Blocks;
 
 #endregion
 
@@ -62,44 +63,42 @@ namespace Paral.Lexing
             }
             else if (Rune.IsWhiteSpace(rune)) return false;
             else if (rune.Equals(RuneHelper.Semicolon)) token = new TerminatorToken(_Location);
+
             // operators
             else if (rune.Equals(RuneHelper.Operators.Add)) token = new ArithmeticOperatorToken(_Location, ArithmeticOperator.Add);
             else if (rune.Equals(RuneHelper.Operators.Subtract)) token = new ArithmeticOperatorToken(_Location, ArithmeticOperator.Subtract);
             else if (rune.Equals(RuneHelper.Operators.Multiply)) token = new ArithmeticOperatorToken(_Location, ArithmeticOperator.Multiply);
             else if (rune.Equals(RuneHelper.Operators.Divide)) token = new ArithmeticOperatorToken(_Location, ArithmeticOperator.Divide);
+
             // blocks
-            else if (rune.Equals(RuneHelper.Blocks.ParenthesisOpen)) token = new BlockToken(_Location, BlockTypes.ParenthesisOpen);
-            else if (rune.Equals(RuneHelper.Blocks.ParenthesisClose)) token = new BlockToken(_Location, BlockTypes.ParenthesisClose);
-            else if (rune.Equals(RuneHelper.Blocks.BracketOpen)) token = new BlockToken(_Location, BlockTypes.BracketOpen);
-            else if (rune.Equals(RuneHelper.Blocks.BracketClose)) token = new BlockToken(_Location, BlockTypes.BracketClose);
-            else if (rune.Equals(RuneHelper.Blocks.SquareBracketOpen)) token = new BlockToken(_Location, BlockTypes.SquareBracketOpen);
-            else if (rune.Equals(RuneHelper.Blocks.SquareBracketClose)) token = new BlockToken(_Location, BlockTypes.SquareBracketClose);
+            else if (rune.Equals(RuneHelper.Blocks.ParenthesisOpen)) token = new ParenthesisToken(_Location, BlockTokenIntent.Open);
+            else if (rune.Equals(RuneHelper.Blocks.ParenthesisClose)) token = new ParenthesisToken(_Location, BlockTokenIntent.Close);
+
             // separators
             else if (rune.Equals(RuneHelper.Comma)) token = new SeparatorToken(_Location, SeparatorType.Comma);
+
             // numeric
-            else if (Rune.IsDigit(rune) && TryCaptureContinuous(buffer, r => Rune.IsDigit(r) || r.Equals(RuneHelper.Period),
-                ref bytesConsumed, out string numeric)) token = new NumericLiteralToken(_Location, numeric);
+            else if (Rune.IsDigit(rune) && TryCaptureNumericLiteral(buffer, ref bytesConsumed, out string literal))
+                token = new NumericLiteralToken(_Location, literal);
+
             // alphanumeric
-            else if (Rune.IsLetter(rune) && TryCaptureContinuous(buffer, Rune.IsLetterOrDigit, ref bytesConsumed, out string alphanumeric))
+            else if (Rune.IsLetter(rune) && TryCaptureAlphanumeric(buffer, ref bytesConsumed, out string alphanumeric))
+            {
                 token = alphanumeric switch
                 {
-                    KeywordHelper.REQUIRES => new KeywordToken(_Location, Keyword.Requires),
+                    KeywordHelper.REQUIRES => new RequiresToken(_Location),
                     KeywordHelper.NAMESPACE => new NamespaceToken(_Location),
-                    KeywordHelper.DECLARES => new KeywordToken(_Location, Keyword.Declares),
-                    KeywordHelper.IMPLEMENTS => new KeywordToken(_Location, Keyword.Implements),
-                    KeywordHelper.THROWS => new KeywordToken(_Location, Keyword.Throws),
-                    KeywordHelper.STRUCT => new KeywordToken(_Location, Keyword.Struct),
-                    KeywordHelper.RETURNS => new KeywordToken(_Location, Keyword.Returns),
-                    KeywordHelper.RETURN => new KeywordToken(_Location, Keyword.Return),
                     _ => new IdentifierToken(_Location, alphanumeric)
                 };
+            }
+
             // other
             else if (rune.Equals(RuneHelper.Colon))
             {
-                if (TryGetRune(buffer.Slice(bytesConsumed), out Rune nextRune, out int nextBytesConsumed) && nextRune.Equals(RuneHelper.Colon))
+                if (IsNextRuneEqual(buffer.Slice(bytesConsumed), RuneHelper.Colon, out int runeLength))
                 {
-                    token = new AccessOperatorToken(_Location, AccessOperator.Namespace);
-                    bytesConsumed += nextBytesConsumed;
+                    token = new NamespaceAccessorToken(_Location);
+                    bytesConsumed += runeLength;
                 }
                 else { }
             }
@@ -123,6 +122,15 @@ namespace Paral.Lexing
             }
             else return false;
         }
+
+        private bool IsNextRuneEqual(ReadOnlySpan<byte> buffer, Rune comparison, out int runeLength) =>
+            TryGetRune(buffer, out Rune rune, out runeLength) && rune.Equals(comparison);
+
+        private bool TryCaptureAlphanumeric(ReadOnlySpan<byte> buffer, ref int bytesConsumed, out string alphanumeric) =>
+            TryCaptureContinuous(buffer, Rune.IsLetterOrDigit, ref bytesConsumed, out alphanumeric);
+
+        private bool TryCaptureNumericLiteral(ReadOnlySpan<byte> buffer, ref int bytesConsumed, out string literal) =>
+            TryCaptureContinuous(buffer, r => Rune.IsDigit(r) || r.Equals(RuneHelper.Period), ref bytesConsumed, out literal);
 
         private bool TryCaptureContinuous(ReadOnlySpan<byte> buffer, Predicate<Rune> condition, ref int bytesConsumed, out string captured)
         {
