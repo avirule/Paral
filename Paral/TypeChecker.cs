@@ -19,7 +19,7 @@ namespace Paral
             {
                 if (!DeclaredTypes.Contains(usedType))
                 {
-                    ExceptionHelper.Error(Point.Empty, $"Type \"{usedType}\" is invalid.");
+                    ThrowHelper.Throw(Point.Empty, $"Type \"{usedType}\" is invalid.");
                     return false;
                 }
             }

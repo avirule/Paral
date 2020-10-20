@@ -50,7 +50,7 @@ namespace Paral
                     case "-in":
                         if ((index + 1) >= args.Count)
                         {
-                            ExceptionHelper.Error("Input file path not provided.");
+                            ThrowHelper.Throw("Input file path not provided.");
                         }
                         else
                         {
@@ -61,7 +61,7 @@ namespace Paral
 
                         break;
                     default:
-                        ExceptionHelper.Error($"Invalid argument \"{args[index]}\".");
+                        ThrowHelper.Throw($"Invalid argument \"{args[index]}\".");
                         break;
                 }
             }
@@ -71,7 +71,7 @@ namespace Paral
         {
             if (string.IsNullOrEmpty(_FilePath))
             {
-                ExceptionHelper.Error("Input file not provided.");
+                ThrowHelper.Throw("Input file not provided.");
             }
         }
 

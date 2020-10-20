@@ -1,13 +1,12 @@
 ﻿#region
 
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Paral.Lexing;
-using Paral.Lexing.Tokens;
+using Paral.Parsing;
+using Paral.Parsing.Nodes;
 
 #endregion
+
 
 namespace Paral
 {
@@ -17,10 +16,8 @@ namespace Paral
         {
             Compiler.InitializeLogger();
 
-            Lexer lexer = new Lexer(File.OpenRead("Test_Heavy.paral"));
-            List<Token> tokens = await lexer.Tokenize().ToListAsync();
-            //Compiler compiler = new Compiler(args);
-            //await compiler.Compile();
+            Parser parser = new Parser(File.OpenRead("Test_Requires.paral"));
+            ApplicationNode applicationNode = await parser.Parse();
         }
     }
 }

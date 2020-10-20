@@ -104,7 +104,7 @@ namespace Paral.Lexing
             }
             else
             {
-                ExceptionHelper.Error(_Location, $"Failed to read a valid token ({rune}).");
+                ThrowHelper.Throw(_Location, $"Failed to read a valid token ({rune}).");
                 return false;
             }
 

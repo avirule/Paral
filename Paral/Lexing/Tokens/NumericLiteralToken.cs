@@ -19,7 +19,7 @@ namespace Paral.Lexing.Tokens
 
                 if (IsDecimal)
                 {
-                    ExceptionHelper.Error(location, "Attempted to parse decimal literal with invalid separator count.");
+                    ThrowHelper.Throw(location, "Attempted to parse decimal literal with invalid separator count.");
                 }
 
                 IsDecimal = true;

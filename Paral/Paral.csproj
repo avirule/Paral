@@ -4,6 +4,7 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <Nullable>enable</Nullable>
+        <LangVersion>9</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,6 +20,7 @@
       <Content Include="bin\Debug\netcoreapp3.1\Serilog.dll" />
       <Content Include="bin\Debug\netcoreapp3.1\Serilog.Sinks.Console.dll" />
       <Content Include="bin\Debug\netcoreapp3.1\Test.paral" />
+      <Content Include="bin\Debug\netcoreapp3.1\Test_Requires.paral" />
       <Content Include="bin\Release\netcoreapp3.1\Paral.deps.json" />
       <Content Include="bin\Release\netcoreapp3.1\Paral.dll" />
       <Content Include="bin\Release\netcoreapp3.1\Paral.exe" />

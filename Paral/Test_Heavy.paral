@@ -1,3 +1,7 @@
+requires Standard::Math;
+
+namespace Standard::IO;
+
 struct FileReader
 {
     // indicate what interfaces this type implements

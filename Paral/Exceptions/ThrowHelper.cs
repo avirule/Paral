@@ -10,29 +10,33 @@ using Serilog;
 
 namespace Paral.Exceptions
 {
-    public class ExceptionHelper
+    public class ThrowHelper
     {
         public const string LEXER_ERROR_TEMPLATE = "[Row: {0}, Col: {1}] {2}";
         public const string TOKEN_ERROR_TEMPLATE = "[Row: {0}, Col: {1}, {2}] {3}";
         public const string INVALID_COMPILER_STATE = "Compiler has entered invalid control flow.";
         public const string EXPECTED_IDENTIFIER = "Expected identifier.";
 
-        public static void Error(string error)
+        public static void Throw(string error)
         {
             Log.Error(error);
             Environment.Exit(-1);
         }
 
-        public static void Error(Point location, string error)
+        public static void Throw(Point location, string error)
         {
             Log.Error(string.Format(LEXER_ERROR_TEMPLATE, location.X, location.Y, error));
             Environment.Exit(-1);
         }
 
-        public static void Error(Token token, string error)
+        public static void Throw(Token token, string error)
         {
             Log.Error(string.Format(TOKEN_ERROR_TEMPLATE, token.Location.X, token.Location.Y, token.GetType(), error));
             Environment.Exit(-1);
         }
+
+        public static void ThrowUnexpectedToken(Token token) => Throw(token, "Unexpected token.");
+
+        public static void ThrowExpectedIdentifier(Token token) => Throw(token, "Expected identifier");
     }
 }
