@@ -16,7 +16,7 @@ namespace Paral
         {
             Compiler.InitializeLogger();
 
-            Parser parser = new Parser(File.OpenRead("Test.paral"));
+            Parser parser = new Parser(File.OpenRead("TestFiles/Test_Namespaces.paral"));
             MasterNode masterNode = await parser.Parse();
         }
     }

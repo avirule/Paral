@@ -6,6 +6,7 @@ using Paral.Exceptions;
 
 #endregion
 
+
 namespace Paral
 {
     public static class TypeChecker

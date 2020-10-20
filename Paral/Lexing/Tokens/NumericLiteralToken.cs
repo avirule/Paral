@@ -1,11 +1,14 @@
+#region
+
 using System.Drawing;
 using System.Text;
-using LLVMSharp;
 using Paral.Exceptions;
+
+#endregion
+
 
 namespace Paral.Lexing.Tokens
 {
-
     public class NumericLiteralToken : Token
     {
         public bool IsDecimal { get; }
@@ -17,10 +20,7 @@ namespace Paral.Lexing.Tokens
             {
                 if (!rune.Equals(RuneHelper.Period)) continue;
 
-                if (IsDecimal)
-                {
-                    ThrowHelper.Throw(location, "Attempted to parse decimal literal with invalid separator count.");
-                }
+                if (IsDecimal) ThrowHelper.Throw(location, "Attempted to parse decimal literal with invalid separator count.");
 
                 IsDecimal = true;
             }

@@ -28,8 +28,7 @@ namespace Paral.Parsing.Nodes
             {
                 if (FindNamespaceNode(identifier, out namespaceNode))
                     return namespaceNode.TryGetNamespaceNodeRecursive(identifiers, out namespaceNode);
-                else
-                    return AllocateNamespaceNode(identifier).TryGetNamespaceNodeRecursive(identifiers, out namespaceNode);
+                else return AllocateNamespaceNode(identifier).TryGetNamespaceNodeRecursive(identifiers, out namespaceNode);
             }
 
             namespaceNode = default;

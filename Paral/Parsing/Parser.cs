@@ -58,10 +58,7 @@ namespace Paral.Parsing
                             break;
                     }
                 }
-                else if (token is NamespaceToken)
-                {
-                    namespaceDeclaration = new List<Token>();
-                }
+                else if (token is NamespaceToken) namespaceDeclaration = new List<Token>();
                 else masterNode.ConsumeToken(token);
             }
 

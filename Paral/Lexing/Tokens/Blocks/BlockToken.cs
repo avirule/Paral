@@ -1,4 +1,9 @@
+#region
+
 using System.Drawing;
+
+#endregion
+
 
 namespace Paral.Lexing.Tokens.Blocks
 {
@@ -12,6 +17,6 @@ namespace Paral.Lexing.Tokens.Blocks
     {
         public BlockTokenIntent Intent { get; }
 
-        public BlockToken(Point location, BlockTokenIntent intent) : base(location) { Intent = intent; }
+        public BlockToken(Point location, BlockTokenIntent intent) : base(location) => Intent = intent;
     }
 }

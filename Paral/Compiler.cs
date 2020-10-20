@@ -11,6 +11,7 @@ using Serilog;
 
 #endregion
 
+
 namespace Paral
 {
     public class Compiler
@@ -48,10 +49,7 @@ namespace Paral
                 switch (args[index])
                 {
                     case "-in":
-                        if ((index + 1) >= args.Count)
-                        {
-                            ThrowHelper.Throw("Input file path not provided.");
-                        }
+                        if ((index + 1) >= args.Count) ThrowHelper.Throw("Input file path not provided.");
                         else
                         {
                             index++;
@@ -69,10 +67,7 @@ namespace Paral
 
         private void ValidateCompilerArguments()
         {
-            if (string.IsNullOrEmpty(_FilePath))
-            {
-                ThrowHelper.Throw("Input file not provided.");
-            }
+            if (string.IsNullOrEmpty(_FilePath)) ThrowHelper.Throw("Input file not provided.");
         }
 
         public async Task Compile()

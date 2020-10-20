@@ -33,7 +33,10 @@
 
     <ItemGroup>
       <None Include="bin\Debug\netcoreapp3.1\Test_Heavy.paral" />
-      <None Update="Test_Heavy.paral">
+      <None Update="TestFiles\Test_Heavy.paral">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="TestFiles\Test_Namespaces.paral">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

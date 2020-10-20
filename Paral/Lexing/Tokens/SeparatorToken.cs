@@ -1,4 +1,9 @@
+#region
+
 using System.Drawing;
+
+#endregion
+
 
 namespace Paral.Lexing.Tokens
 {
@@ -11,6 +16,6 @@ namespace Paral.Lexing.Tokens
     {
         public SeparatorType Type { get; }
 
-        public SeparatorToken(Point location, SeparatorType type) : base(location) { Type = type; }
+        public SeparatorToken(Point location, SeparatorType type) : base(location) => Type = type;
     }
 }
