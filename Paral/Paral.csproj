@@ -37,4 +37,11 @@
       <PackageReference Include="System.Linq.Async" Version="4.1.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Include="bin\Debug\netcoreapp3.1\Test_Heavy.paral" />
+      <None Update="Test_Heavy.paral">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

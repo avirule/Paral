@@ -14,6 +14,6 @@ struct FileReader
     {
         throws IOException, BufferOverflowException;
 
-        return (i8)0;
+        return (i8)0.0;
     }
 }

@@ -62,21 +62,25 @@ namespace Paral.Lexing
             }
             else if (Rune.IsWhiteSpace(rune)) return false;
             else if (rune.Equals(RuneHelper.Semicolon)) token = new TerminatorToken(_Location);
+            // operators
             else if (rune.Equals(RuneHelper.Operators.Add)) token = new ArithmeticOperatorToken(_Location, ArithmeticOperator.Add);
             else if (rune.Equals(RuneHelper.Operators.Subtract)) token = new ArithmeticOperatorToken(_Location, ArithmeticOperator.Subtract);
             else if (rune.Equals(RuneHelper.Operators.Multiply)) token = new ArithmeticOperatorToken(_Location, ArithmeticOperator.Multiply);
             else if (rune.Equals(RuneHelper.Operators.Divide)) token = new ArithmeticOperatorToken(_Location, ArithmeticOperator.Divide);
-            else if (rune.Equals(RuneHelper.Colon))
-            {
-                if (TryGetRune(buffer.Slice(bytesConsumed), out Rune nextRune, out int nextBytesConsumed) && nextRune.Equals(RuneHelper.Colon))
-                {
-                    token = new AccessOperatorToken(_Location, AccessOperator.Namespace);
-                    consumed = sequence.GetPosition(nextBytesConsumed + bytesConsumed);
-                }
-                else { }
-            }
+            // blocks
+            else if (rune.Equals(RuneHelper.Blocks.ParenthesisOpen)) token = new BlockToken(_Location, BlockTypes.ParenthesisOpen);
+            else if (rune.Equals(RuneHelper.Blocks.ParenthesisClose)) token = new BlockToken(_Location, BlockTypes.ParenthesisClose);
+            else if (rune.Equals(RuneHelper.Blocks.BracketOpen)) token = new BlockToken(_Location, BlockTypes.BracketOpen);
+            else if (rune.Equals(RuneHelper.Blocks.BracketClose)) token = new BlockToken(_Location, BlockTypes.BracketClose);
+            else if (rune.Equals(RuneHelper.Blocks.SquareBracketOpen)) token = new BlockToken(_Location, BlockTypes.SquareBracketOpen);
+            else if (rune.Equals(RuneHelper.Blocks.SquareBracketClose)) token = new BlockToken(_Location, BlockTypes.SquareBracketClose);
+            // separators
+            else if (rune.Equals(RuneHelper.Comma)) token = new SeparatorToken(_Location, SeparatorType.Comma);
+            // numeric
+            else if (Rune.IsDigit(rune) && TryCaptureContinuous(buffer, r => Rune.IsDigit(r) || r.Equals(RuneHelper.Period),
+                ref bytesConsumed, out string numeric)) token = new NumericLiteralToken(_Location, numeric);
+            // alphanumeric
             else if (Rune.IsLetter(rune) && TryCaptureContinuous(buffer, Rune.IsLetterOrDigit, ref bytesConsumed, out string alphanumeric))
-            {
                 token = alphanumeric switch
                 {
                     KeywordHelper.REQUIRES => new KeywordToken(_Location, Keyword.Requires),
@@ -88,15 +92,23 @@ namespace Paral.Lexing
                     KeywordHelper.RETURN => new KeywordToken(_Location, Keyword.Return),
                     _ => new IdentifierToken(_Location, alphanumeric)
                 };
-
-                consumed = sequence.GetPosition(bytesConsumed);
+            // other
+            else if (rune.Equals(RuneHelper.Colon))
+            {
+                if (TryGetRune(buffer.Slice(bytesConsumed), out Rune nextRune, out int nextBytesConsumed) && nextRune.Equals(RuneHelper.Colon))
+                {
+                    token = new AccessOperatorToken(_Location, AccessOperator.Namespace);
+                    bytesConsumed += nextBytesConsumed;
+                }
+                else { }
             }
             else
             {
-                ExceptionHelper.Error(_Location, "Failed to read a valid token.");
+                ExceptionHelper.Error(_Location, $"Failed to read a valid token ({rune}).");
                 return false;
             }
 
+            consumed = sequence.GetPosition(bytesConsumed);
             return true;
         }
 

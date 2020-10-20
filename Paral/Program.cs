@@ -17,7 +17,7 @@ namespace Paral
         {
             Compiler.InitializeLogger();
 
-            Lexer lexer = new Lexer(File.OpenRead("Test.paral"));
+            Lexer lexer = new Lexer(File.OpenRead("Test_Heavy.paral"));
             List<Token> tokens = await lexer.Tokenize().ToListAsync();
             //Compiler compiler = new Compiler(args);
             //await compiler.Compile();
