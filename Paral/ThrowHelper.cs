@@ -8,7 +8,7 @@ using Serilog;
 #endregion
 
 
-namespace Paral.Exceptions
+namespace Paral
 {
     public class ThrowHelper
     {

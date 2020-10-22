@@ -5,7 +5,7 @@ using System.Drawing;
 #endregion
 
 
-namespace Paral.Lexing.Tokens
+namespace Paral.Lexing.Tokens.Keywords
 {
     public class RequiresToken : Token
     {

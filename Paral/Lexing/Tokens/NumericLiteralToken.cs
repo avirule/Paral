@@ -2,7 +2,6 @@
 
 using System.Drawing;
 using System.Text;
-using Paral.Exceptions;
 
 #endregion
 

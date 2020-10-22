@@ -1,7 +1,6 @@
 #region
 
 using System.Collections.Generic;
-using Paral.Exceptions;
 using Paral.Lexing.Tokens;
 
 #endregion

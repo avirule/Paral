@@ -7,9 +7,9 @@ using System.Drawing;
 using System.IO;
 using System.IO.Pipelines;
 using System.Text;
-using Paral.Exceptions;
 using Paral.Lexing.Tokens;
 using Paral.Lexing.Tokens.Blocks;
+using Paral.Lexing.Tokens.Keywords;
 
 #endregion
 
@@ -88,6 +88,7 @@ namespace Paral.Lexing
                 {
                     KeywordHelper.REQUIRES => new RequiresToken(_Location),
                     KeywordHelper.NAMESPACE => new NamespaceToken(_Location),
+                    KeywordHelper.IMPLEMENTS => new ImplementsToken(_Location),
                     _ => new IdentifierToken(_Location, alphanumeric)
                 };
             }

@@ -12,7 +12,7 @@ struct FileReader
     declares ReadAllText() returns string;
     declares StreamPosition returns i32;
 
-    i32 StreamPosition;
+    StreamPosition returns i32 is 0;
 
     ReadByte() returns i8
     {
