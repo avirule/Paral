@@ -103,6 +103,7 @@ namespace Paral.Lexing
                 }
                 else
                 {
+                    return false;
                     token = new TypeAssignmentOperatorToken(_Location);
                 }
             }
@@ -114,17 +115,6 @@ namespace Paral.Lexing
 
             consumed = sequence.GetPosition(bytesConsumed);
             return true;
-        }
-
-        private bool TryGetRune(ReadOnlySpan<byte> buffer, out Rune rune, out int bytesConsumed)
-        {
-            if (Rune.DecodeFromUtf8(buffer, out rune, out bytesConsumed) == OperationStatus.Done)
-            {
-                _Location.X += 1;
-
-                return true;
-            }
-            else return false;
         }
 
         private bool IsNextRuneEqual(ReadOnlySpan<byte> buffer, Rune comparison, out int runeLength) =>
@@ -140,8 +130,20 @@ namespace Paral.Lexing
         {
             bool success;
             while ((success = TryGetRune(buffer.Slice(bytesConsumed), out Rune rune, out int consumed)) && condition(rune)) bytesConsumed += consumed;
+
             captured = Encoding.UTF8.GetString(buffer.Slice(0, bytesConsumed));
             return success;
+        }
+
+        private bool TryGetRune(ReadOnlySpan<byte> buffer, out Rune rune, out int bytesConsumed)
+        {
+            if (Rune.DecodeFromUtf8(buffer, out rune, out bytesConsumed) == OperationStatus.Done)
+            {
+                _Location.X += 1;
+
+                return true;
+            }
+            else return false;
         }
     }
 }

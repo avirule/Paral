@@ -12,10 +12,10 @@ namespace Paral.Parsing.Nodes
 {
     public abstract class Node
     {
-        public bool Completed { get; private set; }
-        public List<Node> Leaves { get; }
+        public bool Completed { get; protected set; }
+        public List<Node> Branches { get; }
 
-        public Node() => Leaves = new List<Node>();
+        public Node() => Branches = new List<Node>();
 
         public bool ConsumeToken(Token token) => Completed = ConsumeTokenInternal(token);
 
@@ -24,13 +24,13 @@ namespace Paral.Parsing.Nodes
         protected NamespaceNode AllocateNamespaceNode(IdentifierToken identifier)
         {
             NamespaceNode namespaceNode = new NamespaceNode(identifier);
-            Leaves.Add(namespaceNode);
+            Branches.Add(namespaceNode);
             return namespaceNode;
         }
 
         protected bool FindNamespaceNode(IdentifierToken identifier, [NotNullWhen(true)] out NamespaceNode? namespaceNode)
         {
-            namespaceNode = Leaves.FirstOrDefault(node => node is NamespaceNode nsNode && nsNode.Identifier.Equals(identifier)) as NamespaceNode;
+            namespaceNode = Branches.FirstOrDefault(node => node is NamespaceNode nsNode && nsNode.Identifier.Equals(identifier)) as NamespaceNode;
             return namespaceNode is not null;
         }
 

@@ -10,15 +10,15 @@ namespace Paral.Parsing.Nodes
 {
     public class ValueNode : Node
     {
-        public IdentifierToken Identifier { get; }
+        public IdentifierNode? Identifier => Branches[0] as IdentifierNode;
 
-        public ValueNode(IdentifierToken identifierToken) => Identifier = identifierToken;
+        public ValueNode(IdentifierToken identifierToken) => Branches.Add(new IdentifierNode(identifierToken));
 
         protected override bool ConsumeTokenInternal(Token token)
         {
-            if ((Leaves.Count > 0) && !Leaves[^1].Completed)
+            if ((Branches.Count > 0) && !Branches[^1].Completed)
             {
-                Node node = Leaves[^1];
+                Node node = Branches[^1];
                 return node.ConsumeToken(token) && node is BlockNode;
             }
             else
@@ -26,8 +26,13 @@ namespace Paral.Parsing.Nodes
                 switch (token)
                 {
                     case ParenthesisToken parenthesisToken when parenthesisToken.Intent == BlockTokenIntent.Open:
-                        Leaves.Add(new ParametersNode());
-                        return false;
+                        Branches.Add(new ParametersNode());
+                        break;
+                    case IdentifierToken identifierToken:
+                        if ((Branches.Count == 2) && Branches[1] is ParametersNode) Branches.Add(new RuntimeTypeNode(identifierToken));
+                        else ThrowHelper.Throw(token, "Unexpected identifier token.");
+
+                        break;
                 }
             }
 

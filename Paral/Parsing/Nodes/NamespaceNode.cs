@@ -19,16 +19,16 @@ namespace Paral.Parsing.Nodes
 
         protected override bool ConsumeTokenInternal(Token token)
         {
-            if ((Leaves.Count > 0) && !Leaves[^1].Completed) Leaves[^1].ConsumeToken(token);
+            if ((Branches.Count > 0) && !Branches[^1].Completed) Branches[^1].ConsumeToken(token);
             else
             {
                 switch (token)
                 {
                     case RequiresToken:
-                        Leaves.Add(new RequiresNode());
+                        Branches.Add(new RequiresNode());
                         return false;
                     case IdentifierToken identifierToken:
-                        Leaves.Add(new ValueNode(identifierToken));
+                        Branches.Add(new ValueNode(identifierToken));
                         return false;
                 }
             }
