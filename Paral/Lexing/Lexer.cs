@@ -101,7 +101,10 @@ namespace Paral.Lexing
                     token = new NamespaceAccessorToken(_Location);
                     bytesConsumed += runeLength;
                 }
-                else { }
+                else
+                {
+                    token = new TypeAssignmentOperatorToken(_Location);
+                }
             }
             else
             {

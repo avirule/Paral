@@ -12,10 +12,12 @@ namespace Paral.Parsing.Nodes
     {
         private NamespaceNode? _CurrentNamespace;
 
-        public override void ConsumeToken(Token token)
+        protected override bool ConsumeTokenInternal(Token token)
         {
             if (_CurrentNamespace is null) ThrowHelper.Throw(token, "Namespace has not been declared for scope.");
             else _CurrentNamespace.ConsumeToken(token);
+
+            return false;
         }
 
         public void SetCurrentNamespace(Stack<IdentifierToken> identifiers)

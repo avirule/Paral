@@ -2,7 +2,9 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Paral.Lexing.Tokens;
+using Paral.Lexing.Tokens.Keywords;
 
 #endregion
 
@@ -15,9 +17,23 @@ namespace Paral.Parsing.Nodes
 
         public NamespaceNode(IdentifierToken identifier) => Identifier = identifier;
 
-        public override void ConsumeToken(Token token)
+        protected override bool ConsumeTokenInternal(Token token)
         {
-            
+            if ((Leaves.Count > 0) && !Leaves[^1].Completed) Leaves[^1].ConsumeToken(token);
+            else
+            {
+                switch (token)
+                {
+                    case RequiresToken:
+                        Leaves.Add(new RequiresNode());
+                        return false;
+                    case IdentifierToken identifierToken:
+                        Leaves.Add(new ValueNode(identifierToken));
+                        return false;
+                }
+            }
+
+            return false;
         }
 
         public bool TryGetNamespaceNodeRecursive(Stack<IdentifierToken> identifiers, [NotNullWhen(true)] out NamespaceNode? namespaceNode)

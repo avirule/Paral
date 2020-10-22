@@ -3,29 +3,30 @@ requires Standard::Math;
 namespace Standard::IO;
 
 // declares are how you expose methods (i.e. 'public' modifier)
-declares ReadByte() returns i8;
-declares ReadAllText() returns string;
-declares StreamPosition returns i32;
+declares ReadByte(): i8;
+declares ReadAllText(): string;
+declares StreamPosition: i32;
 
 FileReader
 {
     // indicate what interfaces this type implements
     implements IStream, IBuffer;
 
-    StreamPosition returns i32;
+    StreamPosition: i32 = 0;
 
     construct FileReader
     {
-        set StreamPosition, 0;
+        StreamPosition = 1;
     }
 }
 
-ReadByte(FileReader reader) returns i8
+ReadByte(reader: FileReader): i8
 {
     throws IOException, BufferOverflowException;
 
-    i8 read = reader.Buffer[reader.StreamPosition];
-    set reader.StreamPosition, reader.StreamPosition + 1;
+    let read = reader.Buffer[reader.StreamPosition];
+    reader.StreamPosition += 1;
+
     return read;
 }
 

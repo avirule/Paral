@@ -12,11 +12,14 @@ namespace Paral.Parsing.Nodes
 {
     public abstract class Node
     {
+        public bool Completed { get; private set; }
         public List<Node> Leaves { get; }
 
         public Node() => Leaves = new List<Node>();
 
-        public abstract void ConsumeToken(Token token);
+        public bool ConsumeToken(Token token) => Completed = ConsumeTokenInternal(token);
+
+        protected abstract bool ConsumeTokenInternal(Token token);
 
         protected NamespaceNode AllocateNamespaceNode(IdentifierToken identifier)
         {
@@ -30,5 +33,8 @@ namespace Paral.Parsing.Nodes
             namespaceNode = Leaves.FirstOrDefault(node => node is NamespaceNode nsNode && nsNode.Identifier.Equals(identifier)) as NamespaceNode;
             return namespaceNode is not null;
         }
+
+        public static IEnumerable<IdentifierToken> ParseIdentifiersFromNamespaceDeclaration(IEnumerable<Token> namespaceDeclaration) =>
+            namespaceDeclaration.Where(token => token is IdentifierToken).Cast<IdentifierToken>();
     }
 }

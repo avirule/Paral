@@ -1,0 +1,6 @@
+namespace Standard;
+
+ValueTest() returns i8
+{
+
+}

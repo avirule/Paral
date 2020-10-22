@@ -46,7 +46,10 @@ namespace Paral.Parsing
                             if ((namespaceDeclaration.Count > 0) && namespaceDeclaration[^1] is IdentifierToken)
                             {
                                 namespaceDeclaration.Add(terminatorToken);
-                                masterNode.SetCurrentNamespace(ParseIdentifiersFromNamespaceDeclaration(namespaceDeclaration));
+
+                                masterNode.SetCurrentNamespace(new Stack<IdentifierToken>(Node.ParseIdentifiersFromNamespaceDeclaration(
+                                    namespaceDeclaration).Reverse()));
+
                                 namespaceDeclaration = default;
                             }
                             else ThrowHelper.Throw(terminatorToken, "Unexpected terminator.");
@@ -63,8 +66,5 @@ namespace Paral.Parsing
 
             return masterNode;
         }
-
-        private static Stack<IdentifierToken> ParseIdentifiersFromNamespaceDeclaration(IEnumerable<Token> namespaceDeclaration) =>
-            new Stack<IdentifierToken>(namespaceDeclaration.Where(token => token is IdentifierToken).Reverse().Cast<IdentifierToken>());
     }
 }
