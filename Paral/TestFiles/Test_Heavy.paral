@@ -2,22 +2,30 @@ requires Standard::Math;
 
 namespace Standard::IO;
 
-struct FileReader
+// declares are how you expose methods (i.e. 'public' modifier)
+declares ReadByte() returns i8;
+declares ReadAllText() returns string;
+declares StreamPosition returns i32;
+
+FileReader
 {
     // indicate what interfaces this type implements
     implements IStream, IBuffer;
 
-    // declares are how you expose methods from the type
-    declares ReadByte() returns i8;
-    declares ReadAllText() returns string;
-    declares StreamPosition returns i32;
+    StreamPosition returns i32;
 
-    StreamPosition returns i32 is 0;
-
-    ReadByte() returns i8
+    construct FileReader
     {
-        throws IOException, BufferOverflowException;
-
-        return (i8)0.0;
+        set StreamPosition, 0;
     }
 }
+
+ReadByte(FileReader reader) returns i8
+{
+    throws IOException, BufferOverflowException;
+
+    i8 read = reader.Buffer[reader.StreamPosition];
+    set reader.StreamPosition, reader.StreamPosition + 1;
+    return read;
+}
+

@@ -15,7 +15,10 @@ namespace Paral.Parsing.Nodes
 
         public NamespaceNode(IdentifierToken identifier) => Identifier = identifier;
 
-        public override void ConsumeToken(Token token) { }
+        public override void ConsumeToken(Token token)
+        {
+            
+        }
 
         public bool TryGetNamespaceNodeRecursive(Stack<IdentifierToken> identifiers, [NotNullWhen(true)] out NamespaceNode? namespaceNode)
         {
