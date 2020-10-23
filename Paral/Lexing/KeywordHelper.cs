@@ -8,7 +8,9 @@ namespace Paral.Lexing
         public const string THROWS = "throws";
         public const string DECLARES = "declares";
         public const string STRUCT = "struct";
-        public const string RETURNS = "returns";
+        public const string CONSTANT = "constant";
+        public const string IMMUTABLE = "immutable";
+        public const string MUTABLE = "mutable";
         public const string RETURN = "return";
     }
 }

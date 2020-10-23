@@ -21,6 +21,8 @@ namespace Paral.Lexing.Tokens
 
     public class RuntimeType : IOperatorTokenType { }
 
+    public class Assignment : IOperatorTokenType { }
+
     public class OperatorToken<T> : Token where T : IOperatorTokenType
     {
         public OperatorToken(Point location) : base(location) { }

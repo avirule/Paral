@@ -31,6 +31,15 @@ namespace Paral.Parsing.Nodes
                     case KeywordToken<Struct> _:
                         Branches.Add(new StructNode());
                         break;
+                    case MutabilityToken<Mutable>:
+                        Branches.Add(new VariableNode<Mutable>());
+                        break;
+                    case MutabilityToken<Immutable>:
+                        Branches.Add(new VariableNode<Immutable>());
+                        break;
+                    case MutabilityToken<Constant>:
+                        Branches.Add(new VariableNode<Constant>());
+                        break;
                 }
             }
 

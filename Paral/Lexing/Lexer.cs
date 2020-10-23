@@ -59,6 +59,7 @@ namespace Paral.Lexing
             else if (TryGetStringFromBuffer(buffer, "/", out bytes, out characters)) token = new OperatorToken<Divide>(_Location);
             else if (TryGetStringFromBuffer(buffer, ":", out bytes, out characters)) token = new OperatorToken<RuntimeType>(_Location);
             else if (TryGetStringFromBuffer(buffer, "::", out bytes, out characters)) token = new OperatorToken<NamespaceAccessor>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "=", out bytes, out characters)) token = new OperatorToken<Assignment>(_Location);
 
             // blocks
             else if (TryGetStringFromBuffer(buffer, "(", out bytes, out characters)) token = new ParenthesisToken(_Location, BlockTokenIntent.Open);
@@ -74,9 +75,12 @@ namespace Paral.Lexing
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.NAMESPACE, out bytes, out characters)) token = new KeywordToken<Namespace>(_Location);
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMPLEMENTS, out bytes, out characters)) token = new KeywordToken<Implements>(_Location);
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.STRUCT, out bytes, out characters)) token = new KeywordToken<Struct>(_Location);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.MUTABLE, out bytes, out characters)) token = new MutabilityToken<Mutable>(_Location);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMMUTABLE, out bytes, out characters)) token = new MutabilityToken<Immutable>(_Location);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.CONSTANT, out bytes, out characters)) token = new MutabilityToken<Constant>(_Location);
 
             // literals
-            else if (TryCaptureNumericLiteral(buffer, out bytes, out string? literal)) token = new NumericLiteralToken(_Location, literal);
+            else if (TryCaptureNumericLiteral(buffer, out bytes, out string? literal)) token = new LiteralToken<Numeric>(_Location, literal);
             else if (TryCaptureAlphanumeric(buffer, out bytes, out string? alphanumeric)) token = new IdentifierToken(_Location, alphanumeric);
 
             // match against first rune
