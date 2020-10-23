@@ -13,7 +13,7 @@ namespace Paral.Parsing.Nodes
         public RuntimeTypeNode? RuntimeType => Branches.Count > 0 ? Branches[0] as RuntimeTypeNode : null;
         public IdentifierNode? Identifier => Branches.Count > 1 ? Branches[1] as IdentifierNode : null;
         public ParametersNode? Parameters => Branches.Count > 2 ? Branches[2] as ParametersNode : null;
-        public LogicNode? Logic => Branches.Count < 3 ? Branches[3] as LogicNode : null;
+        public BlockNode? Logic => Branches.Count < 3 ? Branches[3] as BlockNode : null;
 
         public FunctionNode(IdentifierToken typeIdentifierToken) => Branches.Add(new RuntimeTypeNode(typeIdentifierToken));
 
@@ -22,7 +22,7 @@ namespace Paral.Parsing.Nodes
             if ((Branches.Count > 0) && !Branches[^1].Completed)
             {
                 Node node = Branches[^1];
-                return node.ConsumeToken(token) && node is LogicNode;
+                return node.ConsumeToken(token) && node is BlockNode;
             }
             else
             {
@@ -39,7 +39,7 @@ namespace Paral.Parsing.Nodes
                 }
                 else if (Logic is null)
                 {
-                    if (token is BracketToken bracketToken && (bracketToken.Intent == BlockTokenIntent.Open)) Branches.Add(new LogicNode());
+                    if (token is BracketToken bracketToken && (bracketToken.Intent == BlockTokenIntent.Open)) Branches.Add(new BlockNode());
                     else ThrowHelper.Throw(token, "Expected function body.");
                 }
                 else ThrowHelper.Throw(token, "Node is complete.");

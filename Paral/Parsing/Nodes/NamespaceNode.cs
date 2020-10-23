@@ -26,10 +26,13 @@ namespace Paral.Parsing.Nodes
                 {
                     case RequiresToken:
                         Branches.Add(new RequiresNode());
-                        return false;
+                        break;
                     case IdentifierToken identifierToken:
                         Branches.Add(new FunctionNode(identifierToken));
-                        return false;
+                        break;
+                    case StructToken _:
+                        Branches.Add(new StructNode());
+                        break;
                 }
             }
 

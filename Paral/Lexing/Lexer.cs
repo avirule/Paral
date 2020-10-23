@@ -10,6 +10,8 @@ using System.Text;
 using Paral.Lexing.Tokens;
 using Paral.Lexing.Tokens.Blocks;
 using Paral.Lexing.Tokens.Keywords;
+using Paral.Parsing.Nodes;
+using Serilog.Core;
 
 #endregion
 
@@ -73,6 +75,8 @@ namespace Paral.Lexing
             // blocks
             else if (rune.Equals(RuneHelper.Blocks.ParenthesisOpen)) token = new ParenthesisToken(_Location, BlockTokenIntent.Open);
             else if (rune.Equals(RuneHelper.Blocks.ParenthesisClose)) token = new ParenthesisToken(_Location, BlockTokenIntent.Close);
+            else if (rune.Equals(RuneHelper.Blocks.BracketOpen)) token = new BracketToken(_Location, BlockTokenIntent.Open);
+            else if (rune.Equals(RuneHelper.Blocks.BracketClose)) token = new BracketToken(_Location, BlockTokenIntent.Close);
 
             // separators
             else if (rune.Equals(RuneHelper.Comma)) token = new SeparatorToken(_Location, SeparatorType.Comma);
@@ -89,6 +93,7 @@ namespace Paral.Lexing
                     KeywordHelper.REQUIRES => new RequiresToken(_Location),
                     KeywordHelper.NAMESPACE => new NamespaceToken(_Location),
                     KeywordHelper.IMPLEMENTS => new ImplementsToken(_Location),
+                    KeywordHelper.STRUCT => new StructToken(_Location),
                     _ => new IdentifierToken(_Location, alphanumeric)
                 };
             }

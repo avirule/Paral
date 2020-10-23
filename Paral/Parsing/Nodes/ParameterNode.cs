@@ -9,17 +9,17 @@ namespace Paral.Parsing.Nodes
 {
     public class ParameterNode : Node
     {
-        public IdentifierNode? Identifier => Branches[0] as IdentifierNode;
-        public RuntimeTypeNode? Type => Branches[1] as RuntimeTypeNode;
+        public RuntimeTypeNode? Type => Branches.Count > 0 ? Branches[0] as RuntimeTypeNode : null;
+        public IdentifierNode? Identifier => Branches.Count > 1 ? Branches[1] as IdentifierNode : null;
 
-        public ParameterNode(IdentifierToken identifierToken) => Branches.Add(new IdentifierNode(identifierToken));
+        public ParameterNode(IdentifierToken identifierToken) => Branches.Add(new RuntimeTypeNode(identifierToken));
 
         protected override bool ConsumeTokenInternal(Token token)
         {
             switch (token)
             {
                 case IdentifierToken identifierToken:
-                    Branches.Add(new RuntimeTypeNode(identifierToken));
+                    Branches.Add(new IdentifierNode(identifierToken));
                     return true;
                 default:
                     ThrowHelper.ThrowUnexpectedToken(token);

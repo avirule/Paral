@@ -45,7 +45,7 @@
       <None Update="TestFiles\Test_Functions.paral">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="TestFiles\Test_Values.paral">
+      <None Update="TestFiles\Test_Structs.paral">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
