@@ -1,3 +1,5 @@
 namespace Standard;
 
-TestFunction(val i32, val2 i32) i32
+i32 TestFunction(i32 val1, i8 val2)
+{
+}

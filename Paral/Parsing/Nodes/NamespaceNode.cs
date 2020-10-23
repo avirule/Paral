@@ -28,7 +28,7 @@ namespace Paral.Parsing.Nodes
                         Branches.Add(new RequiresNode());
                         return false;
                     case IdentifierToken identifierToken:
-                        Branches.Add(new ValueNode(identifierToken));
+                        Branches.Add(new FunctionNode(identifierToken));
                         return false;
                 }
             }
