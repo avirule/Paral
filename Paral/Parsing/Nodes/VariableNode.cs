@@ -28,7 +28,7 @@ namespace Paral.Parsing.Nodes
                     if (token is IdentifierToken identifierToken) Branches.Add(new RuntimeTypeNode(identifierToken));
                     else ThrowHelper.ThrowExpectedIdentifier(token);
                 }
-                else if (Value is null && token is OperatorToken<Assignment> _) Branches.Add(new ExpressionNode());
+                else if (Value is null) Branches.Add(new ExpressionNode());
                 else if (token is TerminatorToken) return true;
                 else ThrowHelper.ThrowUnexpectedToken(token);
             }

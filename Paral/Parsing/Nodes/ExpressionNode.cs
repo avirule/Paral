@@ -16,11 +16,24 @@ namespace Paral.Parsing.Nodes
             {
                 switch (token)
                 {
-                    case LiteralToken<Numeric>:
-                        Branches.Add(new LiteralNode<Numeric>());
+                    case IdentifierToken identifierToken:
+                        Branches.Add(new IdentifierNode(identifierToken));
                         break;
-                    case OperatorToken<Add>:
-                        Branches.Add(new OperatorNode<Add>());
+                    case LiteralToken literalToken:
+                        Branches.Add(new LiteralNode(literalToken.Type, literalToken.Value));
+                        break;
+                    case ArithmeticToken arithmeticToken:
+                        if (Branches[^1] is LiteralNode or IdentifierNode)
+                        {
+                            Node node = Branches[^1];
+                            Branches.RemoveAt(Branches.Count - 1);
+                            ArithmeticNode arithmeticNode = new ArithmeticNode(arithmeticToken.Operator);
+                            arithmeticNode.Branches.Add(node);
+                        }
+                        else
+                        {
+                            ThrowHelper.ThrowUnexpectedToken(token);
+                        }
                         break;
                     case TerminatorToken: return true;
                 }

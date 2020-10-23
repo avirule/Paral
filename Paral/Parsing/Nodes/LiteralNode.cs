@@ -8,8 +8,11 @@ using Paral.Lexing.Tokens;
 
 namespace Paral.Parsing.Nodes
 {
-    public class LiteralNode<T> : LeafNode where T : ILiteral
+    public class LiteralNode : LeafNode
     {
-        protected override bool ConsumeTokenInternal(Token token) => throw new NotImplementedException();
+        public Literal Type { get; }
+        public string Value { get; }
+
+        public LiteralNode(Literal type, string value) => (Type, Value) = (type, value);
     }
 }
