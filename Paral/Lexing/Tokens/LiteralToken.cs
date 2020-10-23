@@ -19,6 +19,6 @@ namespace Paral.Lexing.Tokens
     {
         public string Value { get; }
 
-        public LiteralToken(Point location, string value) : base(location) { Value = value; }
+        public LiteralToken(Point location, string value) : base(location) => Value = value;
     }
 }
