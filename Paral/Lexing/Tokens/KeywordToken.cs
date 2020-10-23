@@ -5,7 +5,7 @@ using System.Drawing;
 #endregion
 
 
-namespace Paral.Lexing.Tokens.Keywords
+namespace Paral.Lexing.Tokens
 {
     public interface IKeyword { }
 

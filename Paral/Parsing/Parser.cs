@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Paral.Lexing;
 using Paral.Lexing.Tokens;
-using Paral.Lexing.Tokens.Keywords;
 using Paral.Parsing.Nodes;
 
 #endregion

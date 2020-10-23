@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Paral.Lexing.Tokens;
-using Paral.Lexing.Tokens.Keywords;
 
 #endregion
 

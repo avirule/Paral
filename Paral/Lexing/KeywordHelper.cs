@@ -1,4 +1,4 @@
-namespace Paral
+namespace Paral.Lexing
 {
     public static class KeywordHelper
     {
