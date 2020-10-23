@@ -38,8 +38,7 @@ namespace Paral.Parsing
 
                             break;
                         case OperatorToken<NamespaceAccessor> namespaceAccessorToken:
-                            if ((namespaceDeclaration.Count > 0) && namespaceDeclaration[^1] is IdentifierToken)
-                                namespaceDeclaration.Add(namespaceAccessorToken);
+                            if ((namespaceDeclaration.Count > 0) && namespaceDeclaration[^1] is IdentifierToken) namespaceDeclaration.Add(namespaceAccessorToken);
                             else ThrowHelper.ThrowExpectedIdentifier(namespaceAccessorToken);
 
                             break;

@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Paral.Lexing.Tokens;
 using Paral.Lexing.Tokens.Keywords;
 
@@ -48,8 +47,7 @@ namespace Paral.Parsing.Nodes
             }
             else if (identifiers.TryPop(out IdentifierToken? identifier))
             {
-                if (FindNamespaceNode(identifier, out namespaceNode))
-                    return namespaceNode.TryGetNamespaceNodeRecursive(identifiers, out namespaceNode);
+                if (FindNamespaceNode(identifier, out namespaceNode)) return namespaceNode.TryGetNamespaceNodeRecursive(identifiers, out namespaceNode);
                 else return AllocateNamespaceNode(identifier).TryGetNamespaceNodeRecursive(identifiers, out namespaceNode);
             }
 

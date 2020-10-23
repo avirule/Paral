@@ -1,4 +1,9 @@
+#region
+
 using System.Drawing;
+
+#endregion
+
 
 namespace Paral.Lexing.Tokens.Blocks
 {

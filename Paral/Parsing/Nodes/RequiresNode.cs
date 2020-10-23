@@ -27,8 +27,7 @@ namespace Paral.Parsing.Nodes
 
                     return false;
                 case OperatorToken<NamespaceAccessor> namespaceAccessorToken:
-                    if ((_NamespaceDeclaration.Count > 0) && _NamespaceDeclaration[^1] is IdentifierToken)
-                        _NamespaceDeclaration.Add(namespaceAccessorToken);
+                    if ((_NamespaceDeclaration.Count > 0) && _NamespaceDeclaration[^1] is IdentifierToken) _NamespaceDeclaration.Add(namespaceAccessorToken);
                     else ThrowHelper.ThrowExpectedIdentifier(namespaceAccessorToken);
 
                     return false;

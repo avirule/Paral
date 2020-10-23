@@ -1,4 +1,9 @@
+#region
+
 using Paral.Lexing.Tokens;
+
+#endregion
+
 
 namespace Paral.Parsing.Nodes
 {

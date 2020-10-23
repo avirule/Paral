@@ -24,8 +24,7 @@ namespace Paral.Parsing.Nodes
         {
             IdentifierToken identifier = identifiers.Pop();
 
-            if (FindNamespaceNode(identifier, out _CurrentNamespace))
-                _CurrentNamespace.TryGetNamespaceNodeRecursive(identifiers, out _CurrentNamespace);
+            if (FindNamespaceNode(identifier, out _CurrentNamespace)) _CurrentNamespace.TryGetNamespaceNodeRecursive(identifiers, out _CurrentNamespace);
             else AllocateNamespaceNode(identifier).TryGetNamespaceNodeRecursive(identifiers, out _CurrentNamespace);
         }
     }

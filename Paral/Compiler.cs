@@ -36,10 +36,7 @@ namespace Paral
             _Parser = new Parser(File.OpenRead(_FilePath));
         }
 
-        public static void InitializeLogger()
-        {
-            Log.Logger = new LoggerConfiguration().WriteTo.Console(outputTemplate: _DEFAULT_TEMPLATE).CreateLogger();
-        }
+        public static void InitializeLogger() { Log.Logger = new LoggerConfiguration().WriteTo.Console(outputTemplate: _DEFAULT_TEMPLATE).CreateLogger(); }
 
         private void ProcessCompilerArguments(IReadOnlyList<string> args)
         {

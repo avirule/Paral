@@ -33,8 +33,7 @@ namespace Paral.Parsing.Nodes
                 }
                 else if (Parameters is null)
                 {
-                    if (token is ParenthesisToken parenthesisToken && (parenthesisToken.Intent == BlockTokenIntent.Open))
-                        Branches.Add(new ParametersNode());
+                    if (token is ParenthesisToken parenthesisToken && (parenthesisToken.Intent == BlockTokenIntent.Open)) Branches.Add(new ParametersNode());
                     else ThrowHelper.Throw(token, "Expected parenthesis to open function parameters.");
                 }
                 else if (Logic is null)
