@@ -7,23 +7,23 @@ using System.Drawing;
 
 namespace Paral.Lexing.Tokens
 {
-    public interface IOperatorTokenType { }
+    public interface IOperator { }
 
-    public class Add : IOperatorTokenType { }
+    public class Add : IOperator { }
 
-    public class Subtract : IOperatorTokenType { }
+    public class Subtract : IOperator { }
 
-    public class Multiply : IOperatorTokenType { }
+    public class Multiply : IOperator { }
 
-    public class Divide : IOperatorTokenType { }
+    public class Divide : IOperator { }
 
-    public class NamespaceAccessor : IOperatorTokenType { }
+    public class NamespaceAccessor : IOperator { }
 
-    public class RuntimeType : IOperatorTokenType { }
+    public class RuntimeType : IOperator { }
 
-    public class Assignment : IOperatorTokenType { }
+    public class Assignment : IOperator { }
 
-    public class OperatorToken<T> : Token where T : IOperatorTokenType
+    public class OperatorToken<T> : Token where T : IOperator
     {
         public OperatorToken(Point location) : base(location) { }
     }

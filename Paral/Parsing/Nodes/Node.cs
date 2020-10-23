@@ -37,4 +37,11 @@ namespace Paral.Parsing.Nodes
         public static IEnumerable<IdentifierToken> ParseIdentifiersFromNamespaceDeclaration(IEnumerable<Token> namespaceDeclaration) =>
             namespaceDeclaration.Where(token => token is IdentifierToken).Cast<IdentifierToken>();
     }
+
+    public abstract class LeafNode : Node
+    {
+        protected LeafNode() => Completed = true;
+
+        protected override bool ConsumeTokenInternal(Token token) => true;
+    }
 }

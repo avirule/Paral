@@ -16,7 +16,12 @@ namespace Paral.Parsing.Nodes
             {
                 switch (token)
                 {
-                    case LiteralToken<Numeric>: break;
+                    case LiteralToken<Numeric>:
+                        Branches.Add(new LiteralNode<Numeric>());
+                        break;
+                    case OperatorToken<Add>:
+                        Branches.Add(new OperatorNode<Add>());
+                        break;
                     case TerminatorToken: return true;
                 }
             }
