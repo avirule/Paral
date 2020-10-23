@@ -1,32 +1,46 @@
 requires Standard::Math;
+requires Standard::Primitives::Numeric;
+requires Standard::Primitives::String;
 
 namespace Standard::IO;
 
 // declares are how you expose methods (i.e. 'public' modifier)
-declares ReadByte(): i8;
-declares ReadAllText(): string;
-declares StreamPosition: i32;
+declares ReadByte(reader FileReader) i8;
+declares ReadAllText(reader FileReader) string;
+
+immutable HELLO_WORLD string = "Hello World!";
 
 FileReader
 {
     // indicate what interfaces this type implements
     implements IStream, IBuffer;
 
-    StreamPosition: i32 = 0;
+    constant DEFAULT_STREAM_POSITION: i32 = -1;
+    mutable StreamPosition: i32 = DEFAULT_STREAM_POSITION;
 
     construct FileReader
     {
         StreamPosition = 1;
     }
+
+    deconstruct FileReader
+    {
+        StreamPosition = DEFAULT_STREAM_POSITION;
+    }
 }
 
-ReadByte(reader: FileReader): i8
+ReadByte(reader FileReader) i8
 {
     throws IOException, BufferOverflowException;
 
-    let read = reader.Buffer[reader.StreamPosition];
-    reader.StreamPosition += 1;
+    immutable read = reader.Buffer[reader.StreamPosition];
+    mutable reader.StreamPosition += 1;
 
     return read;
+
+    finally
+    {
+        deconstruct(reader);
+    }
 }
 

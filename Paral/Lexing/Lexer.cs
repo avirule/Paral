@@ -3,6 +3,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.IO.Pipelines;
@@ -10,8 +11,6 @@ using System.Text;
 using Paral.Lexing.Tokens;
 using Paral.Lexing.Tokens.Blocks;
 using Paral.Lexing.Tokens.Keywords;
-using Paral.Parsing.Nodes;
-using Serilog.Core;
 
 #endregion
 
@@ -38,7 +37,7 @@ namespace Paral.Lexing
             {
                 ReadOnlySequence<byte> sequence = result.Buffer;
 
-                if (TryReadToken(sequence, out SequencePosition consumed, out Token token)) yield return token;
+                if (TryReadToken(sequence, out SequencePosition consumed, out Token? token)) yield return token;
 
                 _PipeReader.AdvanceTo(consumed, consumed);
             }
@@ -46,103 +45,106 @@ namespace Paral.Lexing
             yield return new EOFToken(_Location);
         }
 
-        private bool TryReadToken(ReadOnlySequence<byte> sequence, out SequencePosition consumed, out Token token)
+        private bool TryReadToken(ReadOnlySequence<byte> sequence, out SequencePosition consumed, [NotNullWhen(true)] out Token? token)
         {
             ReadOnlySpan<byte> buffer = sequence.FirstSpan;
             consumed = sequence.Start;
-            token = default!;
+            token = null;
 
-            if (!TryGetRune(buffer, out Rune rune, out int bytesConsumed)) return false;
-
-            consumed = sequence.GetPosition(bytesConsumed);
-
-            if (rune.Equals(RuneHelper.NewLine))
-            {
-                _Location.Y += 1;
-                _Location.X = 1;
-
-                return false;
-            }
-            else if (Rune.IsWhiteSpace(rune)) return false;
-            else if (rune.Equals(RuneHelper.Semicolon)) token = new TerminatorToken(_Location);
+            if (TryGetStringFromBuffer(buffer, ";", out int bytes, out int characters)) token = new TerminatorToken(_Location);
 
             // operators
-            else if (rune.Equals(RuneHelper.Operators.Add)) token = new ArithmeticOperatorToken(_Location, ArithmeticOperator.Add);
-            else if (rune.Equals(RuneHelper.Operators.Subtract)) token = new ArithmeticOperatorToken(_Location, ArithmeticOperator.Subtract);
-            else if (rune.Equals(RuneHelper.Operators.Multiply)) token = new ArithmeticOperatorToken(_Location, ArithmeticOperator.Multiply);
-            else if (rune.Equals(RuneHelper.Operators.Divide)) token = new ArithmeticOperatorToken(_Location, ArithmeticOperator.Divide);
+            else if (TryGetStringFromBuffer(buffer, "+", out bytes, out characters)) token = new OperatorToken<Add>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "-", out bytes, out characters)) token = new OperatorToken<Subtract>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "*", out bytes, out characters)) token = new OperatorToken<Multiply>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "/", out bytes, out characters)) token = new OperatorToken<Divide>(_Location);
+            else if (TryGetStringFromBuffer(buffer, ":", out bytes, out characters)) token = new OperatorToken<RuntimeType>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "::", out bytes, out characters)) token = new OperatorToken<NamespaceAccessor>(_Location);
 
             // blocks
-            else if (rune.Equals(RuneHelper.Blocks.ParenthesisOpen)) token = new ParenthesisToken(_Location, BlockTokenIntent.Open);
-            else if (rune.Equals(RuneHelper.Blocks.ParenthesisClose)) token = new ParenthesisToken(_Location, BlockTokenIntent.Close);
-            else if (rune.Equals(RuneHelper.Blocks.BracketOpen)) token = new BracketToken(_Location, BlockTokenIntent.Open);
-            else if (rune.Equals(RuneHelper.Blocks.BracketClose)) token = new BracketToken(_Location, BlockTokenIntent.Close);
+            else if (TryGetStringFromBuffer(buffer, "(", out bytes, out characters)) token = new ParenthesisToken(_Location, BlockTokenIntent.Open);
+            else if (TryGetStringFromBuffer(buffer, ")", out bytes, out characters)) token = new ParenthesisToken(_Location, BlockTokenIntent.Close);
+            else if (TryGetStringFromBuffer(buffer, "{", out bytes, out characters)) token = new BracketToken(_Location, BlockTokenIntent.Open);
+            else if (TryGetStringFromBuffer(buffer, "}", out bytes, out characters)) token = new BracketToken(_Location, BlockTokenIntent.Close);
 
             // separators
-            else if (rune.Equals(RuneHelper.Comma)) token = new SeparatorToken(_Location, SeparatorType.Comma);
+            else if (TryGetStringFromBuffer(buffer, ",", out bytes, out characters)) token = new SeparatorToken(_Location, SeparatorType.Comma);
 
-            // numeric
-            else if (Rune.IsDigit(rune) && TryCaptureNumericLiteral(buffer, ref bytesConsumed, out string literal))
-                token = new NumericLiteralToken(_Location, literal);
+            // keywords
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.REQUIRES, out bytes, out characters)) token = new KeywordToken<Requires>(_Location);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.NAMESPACE, out bytes, out characters)) token = new KeywordToken<Namespace>(_Location);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMPLEMENTS, out bytes, out characters)) token = new KeywordToken<Implements>(_Location);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.STRUCT, out bytes, out characters)) token = new KeywordToken<Struct>(_Location);
 
-            // alphanumeric
-            else if (Rune.IsLetter(rune) && TryCaptureAlphanumeric(buffer, ref bytesConsumed, out string alphanumeric))
+            // literals
+            else if (TryCaptureNumericLiteral(buffer, out bytes, out string? literal)) token = new NumericLiteralToken(_Location, literal);
+            else if (TryCaptureAlphanumeric(buffer, out bytes, out string? alphanumeric)) token = new IdentifierToken(_Location, alphanumeric);
+
+            // match against first rune
+            else if (TryGetRune(buffer, out Rune rune, out bytes))
             {
-                token = alphanumeric switch
-                {
-                    KeywordHelper.REQUIRES => new RequiresToken(_Location),
-                    KeywordHelper.NAMESPACE => new NamespaceToken(_Location),
-                    KeywordHelper.IMPLEMENTS => new ImplementsToken(_Location),
-                    KeywordHelper.STRUCT => new StructToken(_Location),
-                    _ => new IdentifierToken(_Location, alphanumeric)
-                };
-            }
+                consumed = sequence.GetPosition(bytes);
 
-            // other
-            else if (rune.Equals(RuneHelper.Colon))
-            {
-                if (IsNextRuneEqual(buffer.Slice(bytesConsumed), RuneHelper.Colon, out int runeLength))
+                if (Rune.IsWhiteSpace(rune)) { }
+                else if (rune == (Rune)'\n')
                 {
-                    token = new NamespaceAccessorToken(_Location);
-                    bytesConsumed += runeLength;
+                    _Location.Y += 1;
+                    _Location.X = 1;
                 }
-                else
-                {
-                    return false;
-                    token = new TypeAssignmentOperatorToken(_Location);
-                }
-            }
-            else
-            {
-                ThrowHelper.Throw(_Location, $"Failed to read a valid token ({rune}).");
+                else ThrowHelper.Throw(_Location, $"Failed to read a valid token ({rune}).");
+
                 return false;
             }
+            else return false;
 
-            consumed = sequence.GetPosition(bytesConsumed);
+            consumed = sequence.GetPosition(bytes);
+            _Location.X += characters;
             return true;
         }
 
-        private bool IsNextRuneEqual(ReadOnlySpan<byte> buffer, Rune comparison, out int runeLength) =>
-            TryGetRune(buffer, out Rune rune, out runeLength) && rune.Equals(comparison);
-
-        private bool TryCaptureAlphanumeric(ReadOnlySpan<byte> buffer, ref int bytesConsumed, out string alphanumeric) =>
-            TryCaptureContinuous(buffer, Rune.IsLetterOrDigit, ref bytesConsumed, out alphanumeric);
-
-        private bool TryCaptureNumericLiteral(ReadOnlySpan<byte> buffer, ref int bytesConsumed, out string literal) =>
-            TryCaptureContinuous(buffer, r => Rune.IsDigit(r) || r.Equals(RuneHelper.Period), ref bytesConsumed, out literal);
-
-        private bool TryCaptureContinuous(ReadOnlySpan<byte> buffer, Predicate<Rune> condition, ref int bytesConsumed, out string captured)
+        private static bool TryGetStringFromBuffer(ReadOnlySpan<byte> buffer, string str, out int bytes, out int characters)
         {
-            bool success;
-            while ((success = TryGetRune(buffer.Slice(bytesConsumed), out Rune rune, out int consumed)) && condition(rune)) bytesConsumed += consumed;
+            bytes = 0;
+            characters = 0;
 
-            captured = Encoding.UTF8.GetString(buffer.Slice(0, bytesConsumed));
-            return success;
+            foreach (Rune rune in str.EnumerateRunes())
+            {
+                if ((buffer.Length > bytes)
+                    && (Rune.DecodeFromUtf8(buffer.Slice(bytes), out Rune result, out int readBytes) == OperationStatus.Done)
+                    && (rune == result))
+                {
+                    bytes += readBytes;
+                    characters += 1;
+                }
+                else return false;
+            }
+
+            return true;
         }
 
-        private bool TryGetRune(ReadOnlySpan<byte> buffer, out Rune rune, out int bytesConsumed)
+        private bool TryCaptureAlphanumeric(ReadOnlySpan<byte> buffer, out int bytes, [NotNullWhen(true)] out string? alphanumeric) =>
+            TryCaptureContinuous(buffer, Rune.IsLetterOrDigit, out bytes, out alphanumeric);
+
+        private bool TryCaptureNumericLiteral(ReadOnlySpan<byte> buffer, out int bytes, [NotNullWhen(true)] out string? literal) =>
+            TryCaptureContinuous(buffer, rune => Rune.IsDigit(rune) || rune.Equals((Rune)'.'), out bytes, out literal);
+
+        private bool TryCaptureContinuous(ReadOnlySpan<byte> buffer, Predicate<Rune> condition, out int bytesConsumed, [NotNullWhen(true)] out string? captured)
         {
-            if (Rune.DecodeFromUtf8(buffer, out rune, out bytesConsumed) == OperationStatus.Done)
+            captured = null;
+            bytesConsumed = 0;
+            while (TryGetRune(buffer.Slice(bytesConsumed), out Rune rune, out int consumed) && condition(rune)) bytesConsumed += consumed;
+
+            if (bytesConsumed > 0)
+            {
+                captured = Encoding.UTF8.GetString(buffer.Slice(0, bytesConsumed));
+                return true;
+            }
+            else return false;
+        }
+
+        private bool TryGetRune(ReadOnlySpan<byte> buffer, out Rune rune, out int bytes)
+        {
+            if (Rune.DecodeFromUtf8(buffer, out rune, out bytes) == OperationStatus.Done)
             {
                 _Location.X += 1;
 

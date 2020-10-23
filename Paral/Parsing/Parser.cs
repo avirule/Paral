@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Paral.Lexing;
 using Paral.Lexing.Tokens;
+using Paral.Lexing.Tokens.Keywords;
 using Paral.Parsing.Nodes;
 
 #endregion
@@ -32,11 +33,11 @@ namespace Paral.Parsing
                     {
                         case IdentifierToken identifierToken:
                             if (namespaceDeclaration.Count == 0) namespaceDeclaration.Add(identifierToken);
-                            else if (namespaceDeclaration[^1] is NamespaceAccessorToken) namespaceDeclaration.Add(identifierToken);
+                            else if (namespaceDeclaration[^1] is OperatorToken<NamespaceAccessor>) namespaceDeclaration.Add(identifierToken);
                             else ThrowHelper.Throw(identifierToken, "Expected terminator or namespace access operator.");
 
                             break;
-                        case NamespaceAccessorToken namespaceAccessorToken:
+                        case OperatorToken<NamespaceAccessor> namespaceAccessorToken:
                             if ((namespaceDeclaration.Count > 0) && namespaceDeclaration[^1] is IdentifierToken)
                                 namespaceDeclaration.Add(namespaceAccessorToken);
                             else ThrowHelper.ThrowExpectedIdentifier(namespaceAccessorToken);
@@ -60,7 +61,7 @@ namespace Paral.Parsing
                             break;
                     }
                 }
-                else if (token is NamespaceToken) namespaceDeclaration = new List<Token>();
+                else if (token is KeywordToken<Namespace>) namespaceDeclaration = new List<Token>();
                 else masterNode.ConsumeToken(token);
             }
 

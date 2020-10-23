@@ -1,6 +1,11 @@
 namespace Standard;
 
-struct TestStruct
+struct FileReader
+{
+
+}
+
+i8 ReadByte(FileReader fileReader)
 {
 
 }

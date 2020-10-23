@@ -24,13 +24,13 @@ namespace Paral.Parsing.Nodes
             {
                 switch (token)
                 {
-                    case RequiresToken:
+                    case KeywordToken<Requires>:
                         Branches.Add(new RequiresNode());
                         break;
                     case IdentifierToken identifierToken:
                         Branches.Add(new FunctionNode(identifierToken));
                         break;
-                    case StructToken _:
+                    case KeywordToken<Struct> _:
                         Branches.Add(new StructNode());
                         break;
                 }

@@ -1,6 +1,7 @@
 #region
 
 using System.Drawing;
+using System.Linq;
 using System.Text;
 
 #endregion
@@ -15,11 +16,9 @@ namespace Paral.Lexing.Tokens
 
         public NumericLiteralToken(Point location, string value) : base(location)
         {
-            foreach (Rune rune in value.EnumerateRunes())
+            foreach (Rune rune in value.EnumerateRunes().Where(rune => rune == (Rune)'.'))
             {
-                if (!rune.Equals(RuneHelper.Period)) continue;
-
-                if (IsDecimal) ThrowHelper.Throw(location, "Attempted to parse decimal literal with invalid separator count.");
+                if (IsDecimal) ThrowHelper.Throw(location, "Attempted to parse decimal literal with too many separators.");
 
                 IsDecimal = true;
             }

@@ -22,11 +22,11 @@ namespace Paral.Parsing.Nodes
             {
                 case IdentifierToken identifierToken:
                     if (_NamespaceDeclaration.Count == 0) _NamespaceDeclaration.Add(identifierToken);
-                    else if (_NamespaceDeclaration[^1] is NamespaceAccessorToken) _NamespaceDeclaration.Add(identifierToken);
+                    else if (_NamespaceDeclaration[^1] is OperatorToken<NamespaceAccessor>) _NamespaceDeclaration.Add(identifierToken);
                     else ThrowHelper.Throw(identifierToken, "Expected terminator or namespace access operator.");
 
                     return false;
-                case NamespaceAccessorToken namespaceAccessorToken:
+                case OperatorToken<NamespaceAccessor> namespaceAccessorToken:
                     if ((_NamespaceDeclaration.Count > 0) && _NamespaceDeclaration[^1] is IdentifierToken)
                         _NamespaceDeclaration.Add(namespaceAccessorToken);
                     else ThrowHelper.ThrowExpectedIdentifier(namespaceAccessorToken);
