@@ -22,7 +22,7 @@ namespace Paral.Parsing
         public async Task<MasterNode> Parse()
         {
             MasterNode masterNode = new MasterNode();
-            List<Token>? namespaceDeclaration = default;
+            List<Token>? namespaceDeclaration = null;
 
             await foreach (Token token in _Lexer.Tokenize())
             {
@@ -50,7 +50,7 @@ namespace Paral.Parsing
                                 masterNode.SetCurrentNamespace(new Stack<IdentifierToken>(Node.ParseIdentifiersFromNamespaceDeclaration(
                                     namespaceDeclaration).Reverse()));
 
-                                namespaceDeclaration = default;
+                                namespaceDeclaration = null;
                             }
                             else ThrowHelper.Throw(terminatorToken, "Unexpected terminator.");
 

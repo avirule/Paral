@@ -80,25 +80,26 @@ namespace Paral.Lexing
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.CONSTANT, out bytes, out characters)) token = new MutabilityToken<Constant>(_Location);
 
             // literals
-            else if (TryCaptureNumericLiteral(buffer, out bytes, out string? literal)) token = new LiteralToken(_Location, Literal.Numeric, literal);
-            else if (TryCaptureAlphanumeric(buffer, out bytes, out string? alphanumeric)) token = new IdentifierToken(_Location, alphanumeric);
+            else if (TryCaptureNumericLiteral(buffer, out bytes, out characters, out string? literal))
+                token = new LiteralToken(_Location, Literal.Numeric, literal);
+            else if (TryCaptureAlphanumeric(buffer, out bytes, out characters, out string? alphanumeric)) token = new IdentifierToken(_Location, alphanumeric);
 
             // match against first rune
-            else if (TryGetRune(buffer, out Rune rune, out bytes))
+            else if (TryGetStringFromBuffer(buffer, "\r\n", out bytes, out characters) || TryGetStringFromBuffer(buffer, "\n", out bytes, out characters))
             {
                 consumed = sequence.GetPosition(bytes);
-
-                if (Rune.IsWhiteSpace(rune)) { }
-                else if (rune == (Rune)'\n')
-                {
-                    _Location.Y += 1;
-                    _Location.X = 1;
-                }
-                else ThrowHelper.Throw(_Location, $"Failed to read a valid token ({rune}).");
+                _Location.Y += 1;
+                _Location.X = 1;
 
                 return false;
             }
-            else return false;
+            else if (TryGetRune(buffer, out Rune rune, out bytes) && Rune.IsWhiteSpace(rune))
+            {
+                consumed = sequence.GetPosition(bytes);
+
+                return false;
+            }
+            else ThrowHelper.Throw(_Location, $"Failed to read a valid token ({rune}).");
 
             consumed = sequence.GetPosition(bytes);
             _Location.X += characters;
@@ -125,22 +126,27 @@ namespace Paral.Lexing
             return true;
         }
 
-        private bool TryCaptureAlphanumeric(ReadOnlySpan<byte> buffer, out int bytes, [NotNullWhen(true)] out string? alphanumeric) =>
-            TryCaptureContinuous(buffer, Rune.IsLetterOrDigit, out bytes, out alphanumeric);
+        private static bool TryCaptureAlphanumeric(ReadOnlySpan<byte> buffer, out int bytes, out int characters,
+            [NotNullWhen(true)] out string? alphanumeric) => TryCaptureContinuous(buffer, Rune.IsLetterOrDigit, out bytes, out characters, out alphanumeric);
 
-        private bool TryCaptureNumericLiteral(ReadOnlySpan<byte> buffer, out int bytes, [NotNullWhen(true)] out string? literal) =>
-            TryCaptureContinuous(buffer, rune => Rune.IsDigit(rune) || rune.Equals((Rune)'.'), out bytes, out literal);
+        private static bool TryCaptureNumericLiteral(ReadOnlySpan<byte> buffer, out int bytes, out int characters, [NotNullWhen(true)] out string? literal) =>
+            TryCaptureContinuous(buffer, rune => Rune.IsDigit(rune) || rune.Equals((Rune)'.'), out bytes, out characters, out literal);
 
-        private bool TryCaptureContinuous(ReadOnlySpan<byte> buffer, Predicate<Rune> condition, out int bytesConsumed, [NotNullWhen(true)] out string? captured)
+        private static bool TryCaptureContinuous(ReadOnlySpan<byte> buffer, Predicate<Rune> condition, out int bytes, out int characters,
+            [NotNullWhen(true)] out string? captured)
         {
             captured = null;
-            bytesConsumed = 0;
+            bytes = characters = 0;
 
-            while (TryGetRune(buffer.Slice(bytesConsumed), out Rune rune, out int consumed) && condition(rune)) bytesConsumed += consumed;
-
-            if (bytesConsumed > 0)
+            while ((Rune.DecodeFromUtf8(buffer.Slice(bytes), out Rune rune, out int bytesConsumed) == OperationStatus.Done) && condition(rune))
             {
-                captured = Encoding.UTF8.GetString(buffer.Slice(0, bytesConsumed));
+                bytes += bytesConsumed;
+                characters += 1;
+            }
+
+            if (bytes > 0)
+            {
+                captured = Encoding.UTF8.GetString(buffer.Slice(0, bytes));
                 return true;
             }
             else return false;

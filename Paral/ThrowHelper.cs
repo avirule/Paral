@@ -12,8 +12,8 @@ namespace Paral
 {
     public class ThrowHelper
     {
-        public const string LEXER_ERROR_TEMPLATE = "[Row: {0}, Col: {1}] {2}";
-        public const string TOKEN_ERROR_TEMPLATE = "[Row: {0}, Col: {1}, {2}] {3}";
+        public const string LEXER_ERROR_TEMPLATE = "[Col: {0}, Row: {1}] {2}";
+        public const string TOKEN_ERROR_TEMPLATE = "[Col: {0}, Row: {1}, {2}] {3}";
 
         public static void Throw(string error)
         {

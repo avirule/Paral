@@ -1,3 +1,2 @@
 namespace Standard;
-
 constant TestValue i32 = 8 + 2;
