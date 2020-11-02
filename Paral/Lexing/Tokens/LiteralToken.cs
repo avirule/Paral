@@ -1,24 +1,23 @@
 #region
 
 using System.Drawing;
+using Paral.Parsing.Nodes;
 
 #endregion
 
 
 namespace Paral.Lexing.Tokens
 {
-    public enum Literal
-    {
-        Numeric,
-        String,
-        Character
-    }
+    public interface ILiteral {}
 
-    public class LiteralToken : Token
+    public class Numeric : ILiteral {}
+    public class Character : ILiteral {}
+    public class String : ILiteral {}
+
+    public class LiteralToken<T> : Token where T : ILiteral
     {
-        public Literal Type { get; }
         public string Value { get; }
 
-        public LiteralToken(Point location, Literal type, string value) : base(location) => (Type, Value) = (type, value);
+        public LiteralToken(Point location, string value) : base(location) => Value = value;
     }
 }

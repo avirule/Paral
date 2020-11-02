@@ -7,33 +7,36 @@ using Paral.Lexing.Tokens;
 
 namespace Paral.Parsing.Nodes
 {
+    public interface ILiteralValued
+    {
+        public string Value { get; }
+    }
+
     public class ExpressionNode : Node
     {
         protected override bool ConsumeTokenInternal(Token token)
         {
-            if ((Branches.Count > 0) && !Branches[^1].Completed) Branches[^1].ConsumeToken(token);
+            if ((Branches.Count > 0) && !Branches[^1].Completed) return Branches[^1].ConsumeToken(token);
             else
             {
                 switch (token)
                 {
                     case IdentifierToken identifierToken:
-                        Branches.Add(new IdentifierNode(identifierToken));
+                        Branches.Add(new IdentifierNode(identifierToken.Value));
                         break;
-                    case LiteralToken literalToken:
-                        Branches.Add(new LiteralNode(literalToken.Type, literalToken.Value));
+                    case LiteralToken<Numeric> literalToken:
+                        Branches.Add(new LiteralNode<Numeric>(literalToken.Value));
                         break;
-                    case ArithmeticToken arithmeticToken:
-                        if (Branches[^1] is LiteralNode or IdentifierNode)
-                        {
-                            Node node = Branches[^1];
-                            Branches.RemoveAt(Branches.Count - 1);
-                            ArithmeticNode arithmeticNode = new ArithmeticNode(arithmeticToken.Operator);
-                            arithmeticNode.Branches.Add(node);
-                        }
-                        else ThrowHelper.ThrowUnexpectedToken(token);
-
+                    case ArithmeticToken arithmeticToken when Branches[^1] is ILiteralValued:
+                        Node node = Branches[^1];
+                        Branches.RemoveAt(Branches.Count - 1);
+                        ArithmeticNode arithmeticNode = new ArithmeticNode(arithmeticToken.Operator, node);
+                        arithmeticNode.Branches.Add(node);
+                        Branches.Add(arithmeticNode);
                         break;
-                    case TerminatorToken: return true;
+                    default:
+                        ThrowHelper.ThrowUnexpectedToken(token);
+                        break;
                 }
             }
 

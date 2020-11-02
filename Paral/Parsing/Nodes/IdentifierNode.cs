@@ -7,10 +7,10 @@ using Paral.Lexing.Tokens;
 
 namespace Paral.Parsing.Nodes
 {
-    public class IdentifierNode : LeafNode
+    public class IdentifierNode : LeafNode, ILiteralValued
     {
         public string Value { get; }
 
-        public IdentifierNode(IdentifierToken identifierToken) => Value = identifierToken.Value;
+        public IdentifierNode(string identifier) => Value = identifier;
     }
 }

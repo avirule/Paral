@@ -44,7 +44,7 @@ namespace Paral.Parsing.Nodes
             switch (token)
             {
                 case IdentifierToken identifierToken:
-                    Branches.Add(new IdentifierNode(identifierToken));
+                    Branches.Add(new IdentifierNode(identifierToken.Value));
                     return true;
                 default:
                     ThrowHelper.ThrowUnexpectedToken(token);

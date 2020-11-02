@@ -15,12 +15,12 @@ namespace Paral.Parsing.Nodes
 
         protected override bool ConsumeTokenInternal(Token token)
         {
-            if ((Branches.Count > 0) && !Branches[^1].Completed) Branches[^1].ConsumeToken(token);
+            if ((Branches.Count > 0) && !Branches[^1].Completed) return Branches[^1].ConsumeToken(token);
             else
             {
                 if (Identifier is null)
                 {
-                    if (token is IdentifierToken identifierToken) Branches.Add(new IdentifierNode(identifierToken));
+                    if (token is IdentifierToken identifierToken) Branches.Add(new IdentifierNode(identifierToken.Value));
                     else ThrowHelper.ThrowExpectedIdentifier(token);
                 }
                 else if (RuntimeType is null)
@@ -29,7 +29,6 @@ namespace Paral.Parsing.Nodes
                     else ThrowHelper.ThrowExpectedIdentifier(token);
                 }
                 else if (Value is null) Branches.Add(new ExpressionNode());
-                else if (token is TerminatorToken) return true;
                 else ThrowHelper.ThrowUnexpectedToken(token);
             }
 

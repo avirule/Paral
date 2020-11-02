@@ -26,7 +26,7 @@ namespace Paral.Parsing.Nodes
             {
                 if (Identifier is null)
                 {
-                    if (token is IdentifierToken identifierToken) Branches.Add(new IdentifierNode(identifierToken));
+                    if (token is IdentifierToken identifierToken) Branches.Add(new IdentifierNode(identifierToken.Value));
                     else ThrowHelper.ThrowExpectedIdentifier(token);
                 }
                 else if (Parameters is null)

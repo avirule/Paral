@@ -81,7 +81,7 @@ namespace Paral.Lexing
 
             // literals
             else if (TryCaptureNumericLiteral(buffer, out bytes, out characters, out string? literal))
-                token = new LiteralToken(_Location, Literal.Numeric, literal);
+                token = new LiteralToken<Numeric>(_Location, literal);
             else if (TryCaptureAlphanumeric(buffer, out bytes, out characters, out string? alphanumeric)) token = new IdentifierToken(_Location, alphanumeric);
 
             // match against first rune
