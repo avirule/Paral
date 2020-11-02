@@ -38,7 +38,7 @@ namespace Paral.Parsing.Nodes
             namespaceDeclaration.Where(token => token is IdentifierToken).Cast<IdentifierToken>();
     }
 
-        public abstract class LeafNode : Node
+    public abstract class LeafNode : Node
     {
         protected LeafNode() => Completed = true;
 

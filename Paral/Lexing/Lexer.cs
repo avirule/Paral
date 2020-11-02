@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.IO.Pipelines;
-using System.Linq.Expressions;
 using System.Text;
 using Paral.Lexing.Tokens;
 using Paral.Lexing.Tokens.Blocks;
@@ -37,7 +36,10 @@ namespace Paral.Lexing
             {
                 ReadOnlySequence<byte> sequence = result.Buffer;
 
-                if (TryReadToken(sequence, out SequencePosition consumed, out Token? token)) yield return token;
+                if (TryReadToken(sequence, out SequencePosition consumed, out Token? token))
+                {
+                    yield return token;
+                }
 
                 _PipeReader.AdvanceTo(consumed, consumed);
             }
@@ -51,37 +53,104 @@ namespace Paral.Lexing
             consumed = sequence.Start;
             token = null;
 
-            if (TryGetStringFromBuffer(buffer, ";", out int bytes, out int characters)) token = new TerminatorToken(_Location);
+            if (TryGetStringFromBuffer(buffer, ";", out int bytes, out int characters))
+            {
+                token = new TerminatorToken(_Location);
+            }
 
             // operators
-            else if (TryGetStringFromBuffer(buffer, "+", out bytes, out characters)) token = new ArithmeticToken(_Location, ArithmeticOperator.Add);
-            else if (TryGetStringFromBuffer(buffer, "-", out bytes, out characters)) token = new ArithmeticToken(_Location, ArithmeticOperator.Subtract);
-            else if (TryGetStringFromBuffer(buffer, "*", out bytes, out characters)) token = new ArithmeticToken(_Location, ArithmeticOperator.Multiply);
-            else if (TryGetStringFromBuffer(buffer, "/", out bytes, out characters)) token = new ArithmeticToken(_Location, ArithmeticOperator.Divide);
-            else if (TryGetStringFromBuffer(buffer, "::", out bytes, out characters)) token = new OperatorToken<NamespaceAccessor>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "=", out bytes, out characters)) token = new OperatorToken<Assignment>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "+", out bytes, out characters))
+            {
+                token = new ArithmeticToken(_Location, ArithmeticOperator.Add);
+            }
+            else if (TryGetStringFromBuffer(buffer, "-", out bytes, out characters))
+            {
+                token = new ArithmeticToken(_Location, ArithmeticOperator.Subtract);
+            }
+            else if (TryGetStringFromBuffer(buffer, "*", out bytes, out characters))
+            {
+                token = new ArithmeticToken(_Location, ArithmeticOperator.Multiply);
+            }
+            else if (TryGetStringFromBuffer(buffer, "/", out bytes, out characters))
+            {
+                token = new ArithmeticToken(_Location, ArithmeticOperator.Divide);
+            }
+            else if (TryGetStringFromBuffer(buffer, "::", out bytes, out characters))
+            {
+                token = new OperatorToken<NamespaceAccessor>(_Location);
+            }
+            else if (TryGetStringFromBuffer(buffer, "=", out bytes, out characters))
+            {
+                token = new OperatorToken<Assignment>(_Location);
+            }
 
             // blocks
-            else if (TryGetStringFromBuffer(buffer, "(", out bytes, out characters)) token = new ParenthesisToken(_Location, BlockTokenIntent.Open);
-            else if (TryGetStringFromBuffer(buffer, ")", out bytes, out characters)) token = new ParenthesisToken(_Location, BlockTokenIntent.Close);
-            else if (TryGetStringFromBuffer(buffer, "{", out bytes, out characters)) token = new BracketToken(_Location, BlockTokenIntent.Open);
-            else if (TryGetStringFromBuffer(buffer, "}", out bytes, out characters)) token = new BracketToken(_Location, BlockTokenIntent.Close);
+            else if (TryGetStringFromBuffer(buffer, "(", out bytes, out characters))
+            {
+                token = new ParenthesisToken(_Location, BlockTokenIntent.Open);
+            }
+            else if (TryGetStringFromBuffer(buffer, ")", out bytes, out characters))
+            {
+                token = new ParenthesisToken(_Location, BlockTokenIntent.Close);
+            }
+            else if (TryGetStringFromBuffer(buffer, "{", out bytes, out characters))
+            {
+                token = new BracketToken(_Location, BlockTokenIntent.Open);
+            }
+            else if (TryGetStringFromBuffer(buffer, "}", out bytes, out characters))
+            {
+                token = new BracketToken(_Location, BlockTokenIntent.Close);
+            }
 
             // separators
-            else if (TryGetStringFromBuffer(buffer, ",", out bytes, out characters)) token = new SeparatorToken(_Location, SeparatorType.Comma);
+            else if (TryGetStringFromBuffer(buffer, ",", out bytes, out characters))
+            {
+                token = new SeparatorToken(_Location, SeparatorType.Comma);
+            }
 
             // keywords
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.REQUIRES, out bytes, out characters)) token = new KeywordToken<Requires>(_Location);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.NAMESPACE, out bytes, out characters)) token = new KeywordToken<Namespace>(_Location);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMPLEMENTS, out bytes, out characters)) token = new KeywordToken<Implements>(_Location);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.STRUCT, out bytes, out characters)) token = new KeywordToken<Struct>(_Location);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.MUTABLE, out bytes, out characters)) token = new MutabilityToken<Mutable>(_Location);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMMUTABLE, out bytes, out characters)) token = new MutabilityToken<Immutable>(_Location);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.CONSTANT, out bytes, out characters)) token = new MutabilityToken<Constant>(_Location);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.REQUIRES, out bytes, out characters))
+            {
+                token = new KeywordToken<Requires>(_Location);
+            }
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.NAMESPACE, out bytes, out characters))
+            {
+                token = new KeywordToken<Namespace>(_Location);
+            }
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMPLEMENTS, out bytes, out characters))
+            {
+                token = new KeywordToken<Implements>(_Location);
+            }
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.STRUCT, out bytes, out characters))
+            {
+                token = new KeywordToken<Struct>(_Location);
+            }
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.FUNCTION, out bytes, out characters))
+            {
+                token = new KeywordToken<Function>(_Location);
+            }
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.MUTABLE, out bytes, out characters))
+            {
+                token = new MutabilityToken<Mutable>(_Location);
+            }
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMMUTABLE, out bytes, out characters))
+            {
+                token = new MutabilityToken<Immutable>(_Location);
+            }
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.CONSTANT, out bytes, out characters))
+            {
+                token = new MutabilityToken<Constant>(_Location);
+            }
 
             // literals
-            else if (TryCaptureNumericLiteral(buffer, out bytes, out string? literal)) token = new LiteralToken(_Location, Literal.Numeric, literal);
-            else if (TryCaptureAlphanumeric(buffer, out bytes, out string? alphanumeric)) token = new IdentifierToken(_Location, alphanumeric);
+            else if (TryCaptureNumericLiteral(buffer, out bytes, out string? literal))
+            {
+                token = new LiteralToken(_Location, Literal.Numeric, literal);
+            }
+            else if (TryCaptureAlphanumeric(buffer, out bytes, out string? alphanumeric))
+            {
+                token = new IdentifierToken(_Location, alphanumeric);
+            }
 
             // match against first rune
             else if (TryGetRune(buffer, out Rune rune, out bytes))
@@ -94,11 +163,17 @@ namespace Paral.Lexing
                     _Location.Y += 1;
                     _Location.X = 1;
                 }
-                else ThrowHelper.Throw(_Location, $"Failed to read a valid token ({rune}).");
+                else
+                {
+                    ThrowHelper.Throw(_Location, $"Failed to read a valid token ({rune}).");
+                }
 
                 return false;
             }
-            else return false;
+            else
+            {
+                return false;
+            }
 
             consumed = sequence.GetPosition(bytes);
             _Location.X += characters;
@@ -119,7 +194,10 @@ namespace Paral.Lexing
                     bytes += readBytes;
                     characters += 1;
                 }
-                else return false;
+                else
+                {
+                    return false;
+                }
             }
 
             return true;
@@ -135,14 +213,21 @@ namespace Paral.Lexing
         {
             captured = null;
             bytesConsumed = 0;
-            while (TryGetRune(buffer.Slice(bytesConsumed), out Rune rune, out int consumed) && condition(rune)) bytesConsumed += consumed;
+
+            while (TryGetRune(buffer.Slice(bytesConsumed), out Rune rune, out int consumed) && condition(rune))
+            {
+                bytesConsumed += consumed;
+            }
 
             if (bytesConsumed > 0)
             {
                 captured = Encoding.UTF8.GetString(buffer.Slice(0, bytesConsumed));
                 return true;
             }
-            else return false;
+            else
+            {
+                return false;
+            }
         }
 
         private bool TryGetRune(ReadOnlySpan<byte> buffer, out Rune rune, out int bytes)
@@ -153,7 +238,10 @@ namespace Paral.Lexing
 
                 return true;
             }
-            else return false;
+            else
+            {
+                return false;
+            }
         }
     }
 }

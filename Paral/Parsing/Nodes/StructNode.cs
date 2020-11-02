@@ -24,15 +24,30 @@ namespace Paral.Parsing.Nodes
             {
                 if (Identifier is null)
                 {
-                    if (token is IdentifierToken identifierToken) Branches.Add(new IdentifierNode(identifierToken));
-                    else ThrowHelper.ThrowExpectedIdentifier(token);
+                    if (token is IdentifierToken identifierToken)
+                    {
+                        Branches.Add(new IdentifierNode(identifierToken));
+                    }
+                    else
+                    {
+                        ThrowHelper.ThrowExpectedIdentifier(token);
+                    }
                 }
                 else if (Body is null)
                 {
-                    if (token is BracketToken bracketToken && (bracketToken.Intent == BlockTokenIntent.Open)) Branches.Add(new BlockNode());
-                    else ThrowHelper.Throw(token, "Expected struct body.");
+                    if (token is BracketToken bracketToken && (bracketToken.Intent == BlockTokenIntent.Open))
+                    {
+                        Branches.Add(new BlockNode());
+                    }
+                    else
+                    {
+                        ThrowHelper.Throw(token, "Expected struct body.");
+                    }
                 }
-                else ThrowHelper.Throw(token, "Node is complete.");
+                else
+                {
+                    ThrowHelper.Throw(token, "Node is complete.");
+                }
             }
 
             return false;

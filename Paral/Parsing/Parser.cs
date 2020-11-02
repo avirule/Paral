@@ -31,14 +31,29 @@ namespace Paral.Parsing
                     switch (token)
                     {
                         case IdentifierToken identifierToken:
-                            if (namespaceDeclaration.Count == 0) namespaceDeclaration.Add(identifierToken);
-                            else if (namespaceDeclaration[^1] is OperatorToken<NamespaceAccessor>) namespaceDeclaration.Add(identifierToken);
-                            else ThrowHelper.Throw(identifierToken, "Expected terminator or namespace access operator.");
+                            if (namespaceDeclaration.Count == 0)
+                            {
+                                namespaceDeclaration.Add(identifierToken);
+                            }
+                            else if (namespaceDeclaration[^1] is OperatorToken<NamespaceAccessor>)
+                            {
+                                namespaceDeclaration.Add(identifierToken);
+                            }
+                            else
+                            {
+                                ThrowHelper.Throw(identifierToken, "Expected terminator or namespace access operator.");
+                            }
 
                             break;
                         case OperatorToken<NamespaceAccessor> namespaceAccessorToken:
-                            if ((namespaceDeclaration.Count > 0) && namespaceDeclaration[^1] is IdentifierToken) namespaceDeclaration.Add(namespaceAccessorToken);
-                            else ThrowHelper.ThrowExpectedIdentifier(namespaceAccessorToken);
+                            if ((namespaceDeclaration.Count > 0) && namespaceDeclaration[^1] is IdentifierToken)
+                            {
+                                namespaceDeclaration.Add(namespaceAccessorToken);
+                            }
+                            else
+                            {
+                                ThrowHelper.ThrowExpectedIdentifier(namespaceAccessorToken);
+                            }
 
                             break;
                         case TerminatorToken terminatorToken:
@@ -51,7 +66,10 @@ namespace Paral.Parsing
 
                                 namespaceDeclaration = default;
                             }
-                            else ThrowHelper.Throw(terminatorToken, "Unexpected terminator.");
+                            else
+                            {
+                                ThrowHelper.Throw(terminatorToken, "Unexpected terminator.");
+                            }
 
                             break;
                         default:
@@ -59,8 +77,14 @@ namespace Paral.Parsing
                             break;
                     }
                 }
-                else if (token is KeywordToken<Namespace>) namespaceDeclaration = new List<Token>();
-                else masterNode.ConsumeToken(token);
+                else if (token is KeywordToken<Namespace>)
+                {
+                    namespaceDeclaration = new List<Token>();
+                }
+                else
+                {
+                    masterNode.ConsumeToken(token);
+                }
             }
 
             return masterNode;

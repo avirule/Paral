@@ -15,6 +15,8 @@ namespace Paral.Lexing.Tokens
 
     public class Struct : IKeyword { }
 
+    public class Function : IKeyword { }
+
     public class Implements : IKeyword { }
 
     public class KeywordToken<T> : Token where T : IKeyword

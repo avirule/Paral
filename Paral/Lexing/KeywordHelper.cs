@@ -7,6 +7,7 @@ namespace Paral.Lexing
         public const string IMPLEMENTS = "implements";
         public const string THROWS = "throws";
         public const string DECLARES = "declares";
+        public const string FUNCTION = "function";
         public const string STRUCT = "struct";
         public const string CONSTANT = "constant";
         public const string IMMUTABLE = "immutable";

@@ -7,7 +7,7 @@ struct FileReader
 
 }
 
-i8 ReadByte(FileReader fileReader)
+function ReadByte(FileReader fileReader) i8
 {
 
 }

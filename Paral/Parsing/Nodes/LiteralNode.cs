@@ -1,6 +1,5 @@
 #region
 
-using System;
 using Paral.Lexing.Tokens;
 
 #endregion

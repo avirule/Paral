@@ -5,17 +5,18 @@ requires Standard::Primitives::String;
 namespace Standard::IO;
 
 // declares are how you expose methods (i.e. 'public' modifier)
-declares ReadByte(reader FileReader) i8;
-declares ReadAllText(reader FileReader) string;
+declares struct FileReader;
+declares function ReadByte(reader FileReader) i8;
+declares function ReadAllText(reader FileReader) string;
 
 immutable HELLO_WORLD string = "Hello World!";
 
-FileReader
+struct FileReader
 {
     // indicate what interfaces this type implements
     implements IStream, IBuffer;
 
-    constant DEFAULT_STREAM_POSITION i32 = -1;
+    immutable DEFAULT_STREAM_POSITION i32 = -1;
     mutable StreamPosition i32 = DEFAULT_STREAM_POSITION;
 
     construct FileReader
@@ -29,7 +30,7 @@ FileReader
     }
 }
 
-ReadByte(reader FileReader) i8
+function ReadByte(reader FileReader) i8
 {
     throws IOException, BufferOverflowException;
 
