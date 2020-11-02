@@ -11,10 +11,7 @@ namespace Paral.Parsing.Nodes
     {
         protected override bool ConsumeTokenInternal(Token token)
         {
-            if ((Branches.Count > 0) && !Branches[^1].Completed)
-            {
-                Branches[^1].ConsumeToken(token);
-            }
+            if ((Branches.Count > 0) && !Branches[^1].Completed) Branches[^1].ConsumeToken(token);
             else
             {
                 switch (token)
@@ -33,10 +30,7 @@ namespace Paral.Parsing.Nodes
                             ArithmeticNode arithmeticNode = new ArithmeticNode(arithmeticToken.Operator);
                             arithmeticNode.Branches.Add(node);
                         }
-                        else
-                        {
-                            ThrowHelper.ThrowUnexpectedToken(token);
-                        }
+                        else ThrowHelper.ThrowUnexpectedToken(token);
 
                         break;
                     case TerminatorToken: return true;

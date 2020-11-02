@@ -21,40 +21,19 @@ namespace Paral.Parsing.Nodes
             switch (token)
             {
                 case IdentifierToken identifierToken:
-                    if (_NamespaceDeclaration.Count == 0)
-                    {
-                        _NamespaceDeclaration.Add(identifierToken);
-                    }
-                    else if (_NamespaceDeclaration[^1] is OperatorToken<NamespaceAccessor>)
-                    {
-                        _NamespaceDeclaration.Add(identifierToken);
-                    }
-                    else
-                    {
-                        ThrowHelper.Throw(identifierToken, "Expected terminator or namespace access operator.");
-                    }
+                    if (_NamespaceDeclaration.Count == 0) _NamespaceDeclaration.Add(identifierToken);
+                    else if (_NamespaceDeclaration[^1] is OperatorToken<NamespaceAccessor>) _NamespaceDeclaration.Add(identifierToken);
+                    else ThrowHelper.Throw(identifierToken, "Expected terminator or namespace access operator.");
 
                     return false;
                 case OperatorToken<NamespaceAccessor> namespaceAccessorToken:
-                    if ((_NamespaceDeclaration.Count > 0) && _NamespaceDeclaration[^1] is IdentifierToken)
-                    {
-                        _NamespaceDeclaration.Add(namespaceAccessorToken);
-                    }
-                    else
-                    {
-                        ThrowHelper.ThrowExpectedIdentifier(namespaceAccessorToken);
-                    }
+                    if ((_NamespaceDeclaration.Count > 0) && _NamespaceDeclaration[^1] is IdentifierToken) _NamespaceDeclaration.Add(namespaceAccessorToken);
+                    else ThrowHelper.ThrowExpectedIdentifier(namespaceAccessorToken);
 
                     return false;
                 case TerminatorToken terminatorToken:
-                    if ((_NamespaceDeclaration.Count > 0) && _NamespaceDeclaration[^1] is IdentifierToken)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        ThrowHelper.Throw(terminatorToken, "Unexpected terminator.");
-                    }
+                    if ((_NamespaceDeclaration.Count > 0) && _NamespaceDeclaration[^1] is IdentifierToken) return true;
+                    else ThrowHelper.Throw(terminatorToken, "Unexpected terminator.");
 
                     return true;
                 default:
