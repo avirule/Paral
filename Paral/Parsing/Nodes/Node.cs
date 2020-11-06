@@ -29,7 +29,13 @@ namespace Paral.Parsing.Nodes
             if (actual is not TExpected) throw new ExpectedTokenException(typeof(TExpected), actual);
         }
 
-        protected static void Expect(Token actual, params Type[] required) => required.Any(type => actual.GetType().IsInstanceOfType(type));
+        protected static void Expect(Token actual, params Type[] required)
+        {
+            if (required.Length == 0) throw new ArgumentException("Must provide at least one type.", nameof(required));
+
+            Type actualType = actual.GetType();
+            if (!required.Any(actualType.IsAssignableFrom)) throw new ExpectedTokenException(required[0], actual);
+        }
     }
 
     public abstract class BranchNode : Node

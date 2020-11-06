@@ -38,7 +38,7 @@ namespace Paral.Lexing
 
                 if (TryReadToken(sequence, out SequencePosition consumed, out Token? token)) yield return token;
 
-                _PipeReader.AdvanceTo(consumed, consumed);
+                _PipeReader.AdvanceTo(consumed);
             }
 
             yield return new EOFToken(_Location);
@@ -58,8 +58,7 @@ namespace Paral.Lexing
             else if (TryGetStringFromBuffer(buffer, "*", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Multiply);
             else if (TryGetStringFromBuffer(buffer, "/", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Divide);
             else if (TryGetStringFromBuffer(buffer, "=", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Assign);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.EQUAL, out bytes, out characters))
-                token = new OperatorToken(_Location, Operator.Compare);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.EQUAL, out bytes, out characters)) token = new OperatorToken(_Location, Operator.Compare);
 
             // blocks
             else if (TryGetStringFromBuffer(buffer, "(", out bytes, out characters)) token = new GroupToken<Parenthetic, Open>(_Location);
