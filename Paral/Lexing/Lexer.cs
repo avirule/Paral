@@ -9,7 +9,6 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Text;
 using Paral.Lexing.Tokens;
-using Paral.Lexing.Tokens.Blocks;
 
 #endregion
 
@@ -61,10 +60,10 @@ namespace Paral.Lexing
             else if (TryGetStringFromBuffer(buffer, "=", out bytes, out characters)) token = new OperatorToken<Assignment>(_Location);
 
             // blocks
-            else if (TryGetStringFromBuffer(buffer, "(", out bytes, out characters)) token = new ParenthesisToken(_Location, BlockTokenIntent.Open);
-            else if (TryGetStringFromBuffer(buffer, ")", out bytes, out characters)) token = new ParenthesisToken(_Location, BlockTokenIntent.Close);
-            else if (TryGetStringFromBuffer(buffer, "{", out bytes, out characters)) token = new BracketToken(_Location, BlockTokenIntent.Open);
-            else if (TryGetStringFromBuffer(buffer, "}", out bytes, out characters)) token = new BracketToken(_Location, BlockTokenIntent.Close);
+            else if (TryGetStringFromBuffer(buffer, "(", out bytes, out characters)) token = new GroupToken<Parenthetic, Open>(_Location);
+            else if (TryGetStringFromBuffer(buffer, ")", out bytes, out characters)) token = new GroupToken<Parenthetic, Close>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "{", out bytes, out characters)) token = new GroupToken<Bracket, Open>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "}", out bytes, out characters)) token = new GroupToken<Bracket, Close>(_Location);
 
             // separators
             else if (TryGetStringFromBuffer(buffer, ",", out bytes, out characters)) token = new SeparatorToken(_Location, SeparatorType.Comma);

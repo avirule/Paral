@@ -1,7 +1,6 @@
 #region
 
 using Paral.Lexing.Tokens;
-using Paral.Lexing.Tokens.Blocks;
 
 #endregion
 
@@ -20,7 +19,7 @@ namespace Paral.Parsing.Nodes
                     case IdentifierToken identifierToken:
                         Branches.Add(new ParameterNode(identifierToken));
                         break;
-                    case ParenthesisToken parenthesisToken when parenthesisToken.Intent == BlockTokenIntent.Close: return true;
+                    case GroupToken<Parenthetic, Close>: return true;
                     case SeparatorToken: break;
                     default:
                         ThrowHelper.ThrowUnexpectedToken(token);

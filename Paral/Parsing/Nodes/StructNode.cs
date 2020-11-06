@@ -1,7 +1,6 @@
 #region
 
 using Paral.Lexing.Tokens;
-using Paral.Lexing.Tokens.Blocks;
 
 #endregion
 
@@ -29,7 +28,7 @@ namespace Paral.Parsing.Nodes
                 }
                 else if (Body is null)
                 {
-                    if (token is BracketToken bracketToken && (bracketToken.Intent == BlockTokenIntent.Open)) Branches.Add(new BlockNode());
+                    if (token is GroupToken<Bracket, Open>) Branches.Add(new BlockNode());
                     else ThrowHelper.Throw(token, "Expected struct body.");
                 }
                 else ThrowHelper.Throw(token, "Node is complete.");

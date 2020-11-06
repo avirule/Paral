@@ -1,7 +1,6 @@
 #region
 
 using Paral.Lexing.Tokens;
-using Paral.Lexing.Tokens.Blocks;
 
 #endregion
 
@@ -31,7 +30,7 @@ namespace Paral.Parsing.Nodes
                 }
                 else if (Parameters is null)
                 {
-                    if (token is ParenthesisToken parenthesisToken && (parenthesisToken.Intent == BlockTokenIntent.Open)) Branches.Add(new ParametersNode());
+                    if (token is GroupToken<Parenthetic, Open>) Branches.Add(new ParametersNode());
                     else ThrowHelper.Throw(token, "Expected parenthesis to open function parameters.");
                 }
                 else if (RuntimeType is null)
@@ -41,7 +40,7 @@ namespace Paral.Parsing.Nodes
                 }
                 else if (Logic is null)
                 {
-                    if (token is BracketToken bracketToken && (bracketToken.Intent == BlockTokenIntent.Open)) Branches.Add(new BlockNode());
+                    if (token is GroupToken<Bracket, Open>) Branches.Add(new BlockNode());
                     else ThrowHelper.Throw(token, "Expected function body.");
                 }
                 else ThrowHelper.Throw(token, "Node is complete.");

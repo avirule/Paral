@@ -1,7 +1,6 @@
 #region
 
 using Paral.Lexing.Tokens;
-using Paral.Lexing.Tokens.Blocks;
 
 #endregion
 
@@ -17,7 +16,7 @@ namespace Paral.Parsing.Nodes
             {
                 switch (token)
                 {
-                    case BracketToken bracketToken when bracketToken.Intent == BlockTokenIntent.Close: return true;
+                    case GroupToken<Bracket, Close>: return true;
                 }
             }
 
