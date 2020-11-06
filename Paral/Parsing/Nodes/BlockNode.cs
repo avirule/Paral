@@ -1,3 +1,4 @@
+using Paral.Lexing;
 using Paral.Lexing.Tokens;
 
 namespace Paral.Parsing.Nodes
@@ -11,7 +12,11 @@ namespace Paral.Parsing.Nodes
             {
                 switch (token)
                 {
+                    case KeywordToken<Return>:
+
+                        break;
                     case GroupToken<Brace, Close>: return true;
+                    default: throw new UnexpectedTokenException(token);
                 }
             }
 

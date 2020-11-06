@@ -2,4 +2,5 @@ namespace Standard;
 
 function i32 TestFunction(i32 val1, i8 val2)
 {
+    return 2 + 2;
 }

@@ -27,7 +27,7 @@ namespace Paral.Parsing.Nodes
                         _Tokens.Add(token);
                         break;
                     case IdentifierToken:
-                        Expect<SeparatorToken<Path>, TerminatorToken>(token);
+                        Expect(token, typeof(SeparatorToken<Path>), typeof(TerminatorToken));
 
                         switch (token)
                         {

@@ -48,7 +48,7 @@ namespace Paral.Parsing.Nodes
                 }
                 else
                 {
-                    Expect<GroupToken<Parenthetic, Close>, SeparatorToken<Comma>>(token);
+                    Expect(token, typeof(GroupToken<Parenthetic, Close>), typeof(SeparatorToken<Comma>));
 
                     switch (token)
                     {

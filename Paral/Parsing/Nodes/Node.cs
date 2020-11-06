@@ -1,5 +1,6 @@
 #region
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -28,12 +29,7 @@ namespace Paral.Parsing.Nodes
             if (actual is not TExpected) throw new ExpectedTokenException(typeof(TExpected), actual);
         }
 
-        protected static void Expect<TExpected1, TExpected2>(Token actual)
-            where TExpected1 : Token
-            where TExpected2 : Token
-        {
-            if (actual is not TExpected1 and not TExpected2) throw new ExpectedTokenException(typeof(TExpected1), actual);
-        }
+        protected static void Expect(Token actual, params Type[] required) => required.Any(type => actual.GetType().IsInstanceOfType(type));
     }
 
     public abstract class BranchNode : Node

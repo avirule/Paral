@@ -15,7 +15,12 @@ namespace Paral.Lexing.Tokens
 
     public class String : ILiteral { }
 
-    public class LiteralToken<T> : Token where T : ILiteral
+    public interface ILiteralToken
+    {
+        public string Value { get; }
+    }
+
+    public class LiteralToken<T> : Token, ILiteralToken where T : ILiteral
     {
         public string Value { get; }
 
