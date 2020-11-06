@@ -4,7 +4,7 @@ namespace Paral.Parsing.Nodes
 {
     public class StructNode : Node
     {
-        public string? Identifier { get; private set; }
+        public string? Identifier { get; private set; } // todo type check
         public BlockNode? Body { get; private set; }
 
         protected override bool ConsumeTokenInternal(Token token)

@@ -15,7 +15,7 @@ namespace Paral
         private static async Task Main(string[] args)
         {
             Compiler.InitializeLogger();
-            Parser parser = new Parser(File.OpenRead("TestFiles/Test_Structs.paral"));
+            Parser parser = new Parser(File.OpenRead("TestFiles/Test_Functions.paral"));
             Module module = await parser.Parse();
         }
     }

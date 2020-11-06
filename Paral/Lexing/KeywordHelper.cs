@@ -9,7 +9,6 @@ namespace Paral.Lexing
         public const string DECLARES = "declares";
         public const string FUNCTION = "function";
         public const string STRUCT = "struct";
-        public const string CONSTANT = "constant";
         public const string IMMUTABLE = "immutable";
         public const string MUTABLE = "mutable";
         public const string RETURN = "return";

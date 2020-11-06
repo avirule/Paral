@@ -19,6 +19,10 @@ namespace Paral.Lexing.Tokens
 
     public class Implements : IKeyword { }
 
+    public class Immutable : IKeyword { }
+
+    public class Mutable : IKeyword { }
+
     public class KeywordToken<T> : Token where T : IKeyword
     {
         public KeywordToken(Point location) : base(location) { }

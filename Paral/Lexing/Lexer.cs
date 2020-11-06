@@ -76,9 +76,8 @@ namespace Paral.Lexing
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMPLEMENTS, out bytes, out characters)) token = new KeywordToken<Implements>(_Location);
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.STRUCT, out bytes, out characters)) token = new KeywordToken<Struct>(_Location);
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.FUNCTION, out bytes, out characters)) token = new KeywordToken<Function>(_Location);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.MUTABLE, out bytes, out characters)) token = new MutabilityToken<Mutable>(_Location);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMMUTABLE, out bytes, out characters)) token = new MutabilityToken<Immutable>(_Location);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.CONSTANT, out bytes, out characters)) token = new MutabilityToken<Constant>(_Location);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.MUTABLE, out bytes, out characters)) token = new KeywordToken<Mutable>(_Location);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMMUTABLE, out bytes, out characters)) token = new KeywordToken<Immutable>(_Location);
 
             // literals
             else if (TryCaptureNumericLiteral(buffer, out bytes, out characters, out string? literal)) token = new LiteralToken<Numeric>(_Location, literal);
