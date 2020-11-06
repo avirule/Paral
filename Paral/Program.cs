@@ -16,7 +16,7 @@ namespace Paral
         {
             Compiler.InitializeLogger();
             Parser parser = new Parser(File.OpenRead("TestFiles/Test_Structs.paral"));
-            MasterNode masterNode = await parser.Parse();
+            Module module = await parser.Parse();
         }
     }
 }

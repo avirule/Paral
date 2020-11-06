@@ -9,9 +9,15 @@ namespace Paral.Lexing.Tokens
 {
     public interface IOperator { }
 
-    public class NamespaceAccessor : IOperator { }
-
     public class Assignment : IOperator { }
+
+    public class Add : IOperator { }
+
+    public class Subtract : IOperator { }
+
+    public class Multiply : IOperator { }
+
+    public class Divide : IOperator { }
 
     public class OperatorToken<T> : Token where T : IOperator
     {

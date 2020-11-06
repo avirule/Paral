@@ -45,7 +45,7 @@ namespace Paral
                 switch (args[index])
                 {
                     case "-in":
-                        if ((index + 1) >= args.Count) ThrowHelper.Throw("Input file path not provided.");
+                        if ((index + 1) >= args.Count) throw new Exception("Input file path not provided.");
                         else
                         {
                             index++;
@@ -55,15 +55,14 @@ namespace Paral
 
                         break;
                     default:
-                        ThrowHelper.Throw($"Invalid argument \"{args[index]}\".");
-                        break;
+                        throw new Exception($"Invalid argument \"{args[index]}\".");
                 }
             }
         }
 
         private void ValidateCompilerArguments()
         {
-            if (string.IsNullOrEmpty(_FilePath)) ThrowHelper.Throw("Input file not provided.");
+            if (string.IsNullOrEmpty(_FilePath)) throw new Exception("Input file not provided.");
         }
 
         public async Task Compile()

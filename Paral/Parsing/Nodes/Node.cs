@@ -1,8 +1,10 @@
 #region
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Paral.Lexing;
 using Paral.Lexing.Tokens;
 
 #endregion
@@ -12,36 +14,60 @@ namespace Paral.Parsing.Nodes
 {
     public abstract class Node
     {
-        public bool Completed { get; protected set; }
-        public List<Node> Branches { get; }
+        protected List<Token> _Tokens { get; }
 
-        public Node() => Branches = new List<Node>();
+        public bool Completed { get; private set; }
+
+        public Node() => _Tokens = new List<Token>();
 
         public bool ConsumeToken(Token token) => Completed = ConsumeTokenInternal(token);
 
         protected abstract bool ConsumeTokenInternal(Token token);
 
-        protected NamespaceNode AllocateNamespaceNode(IdentifierToken identifier)
+        protected static void Expect<TExpected>(Token actual) where TExpected : Token
         {
-            NamespaceNode namespaceNode = new NamespaceNode(identifier);
-            Branches.Add(namespaceNode);
-            return namespaceNode;
+            if (actual is not TExpected) throw new ExpectedTokenException(typeof(TExpected), actual);
         }
 
-        protected bool FindNamespaceNode(IdentifierToken identifier, [NotNullWhen(true)] out NamespaceNode? namespaceNode)
+        protected static void Expect<TExpected1, TExpected2>(Token actual)
+            where TExpected1 : Token
+            where TExpected2 : Token
         {
-            namespaceNode = Branches.FirstOrDefault(node => node is NamespaceNode nsNode && nsNode.Identifier.Equals(identifier)) as NamespaceNode;
-            return namespaceNode is not null;
+            if (actual is not TExpected1 and not TExpected2) throw new ExpectedTokenException(typeof(TExpected1), actual);
         }
-
-        public static IEnumerable<IdentifierToken> ParseIdentifiersFromNamespaceDeclaration(IEnumerable<Token> namespaceDeclaration) =>
-            namespaceDeclaration.Where(token => token is IdentifierToken).Cast<IdentifierToken>();
     }
 
-    public abstract class LeafNode : Node
+    public abstract class BranchNode : Node
     {
-        protected LeafNode() => Completed = true;
+        public List<Node> Branches { get; }
 
-        protected override bool ConsumeTokenInternal(Token token) => true;
+        public BranchNode() => Branches = new List<Node>();
+
+        protected NamespaceNode? FindOrCreateNamespace(Queue<string> identities)
+        {
+            BranchNode current = this;
+
+            while (identities.TryDequeue(out string? identity))
+            {
+                if (current.TryFindNamespace(identity, out NamespaceNode? next))
+                {
+                    current = next;
+                }
+                else
+                {
+                    next = new NamespaceNode(identity);
+                    current.Branches.Add(next);
+                    current = next;
+                }
+            }
+
+            return current as NamespaceNode;
+        }
+
+        private bool TryFindNamespace(string identity, [NotNullWhen(true)] out NamespaceNode? namespaceNode)
+        {
+            namespaceNode = Branches.SingleOrDefault(node => node is NamespaceNode current && current.Identity.Equals(identity)) as NamespaceNode;
+            return namespaceNode is not null;
+        }
     }
 }

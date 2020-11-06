@@ -1,2 +1,8 @@
-namespace Standard;
-constant TestValue i32 = 8 + 2;
+requires Standard::Math;
+
+namespace Standard::Test::Test2::Test3;
+
+struct TestStruct
+{
+
+}

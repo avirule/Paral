@@ -1,7 +1,6 @@
 #region
 
 using System.Drawing;
-using Paral.Parsing.Nodes;
 
 #endregion
 

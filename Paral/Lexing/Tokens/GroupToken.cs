@@ -21,7 +21,7 @@ namespace Paral.Lexing.Tokens
 
     public class Close : IIntent { }
 
-    public class GroupToken<TGrouping, TIntent> : Token
+    public class GroupToken<TGrouping, TIntent> : Token where TGrouping : IGrouping where TIntent : IIntent
     {
         public GroupToken(Point location) : base(location) { }
     }

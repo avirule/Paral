@@ -7,15 +7,16 @@ using System.Drawing;
 
 namespace Paral.Lexing.Tokens
 {
-    public enum SeparatorType
-    {
-        Comma
-    }
+    public interface ISeparator { }
 
-    public class SeparatorToken : Token
-    {
-        public SeparatorType Type { get; }
+    public class Path : ISeparator { }
 
-        public SeparatorToken(Point location, SeparatorType type) : base(location) => Type = type;
+    public class Member : ISeparator { }
+
+    public class Comma : ISeparator { }
+
+    public class SeparatorToken<TSeparator> : Token where TSeparator : ISeparator
+    {
+        public SeparatorToken(Point location) : base(location) { }
     }
 }

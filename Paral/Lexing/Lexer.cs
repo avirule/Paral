@@ -9,6 +9,7 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Text;
 using Paral.Lexing.Tokens;
+using Path = Paral.Lexing.Tokens.Path;
 
 #endregion
 
@@ -52,21 +53,22 @@ namespace Paral.Lexing
             if (TryGetStringFromBuffer(buffer, ";", out int bytes, out int characters)) token = new TerminatorToken(_Location);
 
             // operators
-            else if (TryGetStringFromBuffer(buffer, "+", out bytes, out characters)) token = new ArithmeticToken(_Location, ArithmeticOperator.Add);
-            else if (TryGetStringFromBuffer(buffer, "-", out bytes, out characters)) token = new ArithmeticToken(_Location, ArithmeticOperator.Subtract);
-            else if (TryGetStringFromBuffer(buffer, "*", out bytes, out characters)) token = new ArithmeticToken(_Location, ArithmeticOperator.Multiply);
-            else if (TryGetStringFromBuffer(buffer, "/", out bytes, out characters)) token = new ArithmeticToken(_Location, ArithmeticOperator.Divide);
-            else if (TryGetStringFromBuffer(buffer, "::", out bytes, out characters)) token = new OperatorToken<NamespaceAccessor>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "+", out bytes, out characters)) token = new OperatorToken<Add>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "-", out bytes, out characters)) token = new OperatorToken<Subtract>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "*", out bytes, out characters)) token = new OperatorToken<Multiply>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "/", out bytes, out characters)) token = new OperatorToken<Divide>(_Location);
             else if (TryGetStringFromBuffer(buffer, "=", out bytes, out characters)) token = new OperatorToken<Assignment>(_Location);
 
             // blocks
             else if (TryGetStringFromBuffer(buffer, "(", out bytes, out characters)) token = new GroupToken<Parenthetic, Open>(_Location);
             else if (TryGetStringFromBuffer(buffer, ")", out bytes, out characters)) token = new GroupToken<Parenthetic, Close>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "{", out bytes, out characters)) token = new GroupToken<Bracket, Open>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "}", out bytes, out characters)) token = new GroupToken<Bracket, Close>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "{", out bytes, out characters)) token = new GroupToken<Brace, Open>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "}", out bytes, out characters)) token = new GroupToken<Brace, Close>(_Location);
 
             // separators
-            else if (TryGetStringFromBuffer(buffer, ",", out bytes, out characters)) token = new SeparatorToken(_Location, SeparatorType.Comma);
+            else if (TryGetStringFromBuffer(buffer, "::", out bytes, out characters)) token = new SeparatorToken<Path>(_Location);
+            else if (TryGetStringFromBuffer(buffer, ".", out bytes, out characters)) token = new SeparatorToken<Member>(_Location);
+            else if (TryGetStringFromBuffer(buffer, ",", out bytes, out characters)) token = new SeparatorToken<Comma>(_Location);
 
             // keywords
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.REQUIRES, out bytes, out characters)) token = new KeywordToken<Requires>(_Location);
@@ -79,8 +81,7 @@ namespace Paral.Lexing
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.CONSTANT, out bytes, out characters)) token = new MutabilityToken<Constant>(_Location);
 
             // literals
-            else if (TryCaptureNumericLiteral(buffer, out bytes, out characters, out string? literal))
-                token = new LiteralToken<Numeric>(_Location, literal);
+            else if (TryCaptureNumericLiteral(buffer, out bytes, out characters, out string? literal)) token = new LiteralToken<Numeric>(_Location, literal);
             else if (TryCaptureAlphanumeric(buffer, out bytes, out characters, out string? alphanumeric)) token = new IdentifierToken(_Location, alphanumeric);
 
             // match against first rune
@@ -98,7 +99,7 @@ namespace Paral.Lexing
 
                 return false;
             }
-            else ThrowHelper.Throw(_Location, $"Failed to read a valid token ({rune}).");
+            else throw new InvalidTokenException(_Location, rune);
 
             consumed = sequence.GetPosition(bytes);
             _Location.X += characters;
