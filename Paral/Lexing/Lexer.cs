@@ -53,11 +53,11 @@ namespace Paral.Lexing
             if (TryGetStringFromBuffer(buffer, ";", out int bytes, out int characters)) token = new TerminatorToken(_Location);
 
             // operators
-            else if (TryGetStringFromBuffer(buffer, "+", out bytes, out characters)) token = new OperatorToken<Add>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "-", out bytes, out characters)) token = new OperatorToken<Subtract>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "*", out bytes, out characters)) token = new OperatorToken<Multiply>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "/", out bytes, out characters)) token = new OperatorToken<Divide>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "=", out bytes, out characters)) token = new OperatorToken<Assignment>(_Location);
+            else if (TryGetStringFromBuffer(buffer, "+", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Add);
+            else if (TryGetStringFromBuffer(buffer, "-", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Subtract);
+            else if (TryGetStringFromBuffer(buffer, "*", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Multiply);
+            else if (TryGetStringFromBuffer(buffer, "/", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Divide);
+            else if (TryGetStringFromBuffer(buffer, "=", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Assign);
 
             // blocks
             else if (TryGetStringFromBuffer(buffer, "(", out bytes, out characters)) token = new GroupToken<Parenthetic, Open>(_Location);
@@ -81,7 +81,10 @@ namespace Paral.Lexing
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.RETURN, out bytes, out characters)) token = new KeywordToken<Return>(_Location);
 
             // literals
-            else if (TryCaptureNumericLiteral(buffer, out bytes, out characters, out string? literal)) token = new LiteralToken<Numeric>(_Location, literal);
+            else if (TryCaptureNumericLiteral(buffer, out bytes, out characters, out string? literal))
+                token = new LiteralToken(_Location, Literal.Numeric, literal);
+
+            // identifier
             else if (TryCaptureAlphanumeric(buffer, out bytes, out characters, out string? alphanumeric)) token = new IdentifierToken(_Location, alphanumeric);
 
             // match against first rune

@@ -32,7 +32,7 @@ namespace Paral.Parsing.Nodes
                 Expect<GroupToken<Brace, Open>>(token);
                 Body = new BlockNode();
             }
-            else if (!Body.Completed) return Body.Completed;
+            else if (!Body.Completed) return Body.ConsumeToken(token);
 
             return Completed;
         }

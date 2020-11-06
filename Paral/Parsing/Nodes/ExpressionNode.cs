@@ -3,35 +3,42 @@ using Paral.Lexing.Tokens;
 
 namespace Paral.Parsing.Nodes
 {
+    public class ReturnExpressionNode : ExpressionNode { }
+
     public class ExpressionNode : Node
     {
-        public Node? Tail { get; private set; }
+        public Node? Expression { get; private set; }
 
-        protected override bool ConsumeTokenInternal(Token token)
+        protected override bool ConsumeTokenInternal(Token token) => Expression?.ConsumeToken(token) ?? ParseExpression(token);
+
+        private bool ParseExpression(Token token)
         {
-            if (Tail is null)
+            if (_Tokens.Count > 0)
             {
-                if (_Tokens.Count > 0)
+                switch (_Tokens[^1])
                 {
-                    switch (_Tokens[^1])
-                    {
-                        case IdentifierToken:
-                            if (token is not OperatorToken<Add> )
-
-
-                            break;
-                            case ILiteralToken: break;
-                    }
-                }
-
-                switch (token)
-                {
-                    case LiteralToken<Numeric>:
-
+                    case LiteralToken literalToken when token is TerminatorToken:
+                        Expression = new LiteralNode(literalToken.Type, literalToken.Value);
+                        return true;
+                    case LiteralToken literalToken when token is OperatorToken operatorToken:
+                        Expression = new OperatorExpressionNode(new LiteralNode(literalToken.Type, literalToken.Value), operatorToken.Operator);
+                        break;
                     default: throw new UnexpectedTokenException(token);
                 }
             }
-            else return Tail.ConsumeToken(token);
+            else
+            {
+                switch (token)
+                {
+                    case LiteralToken:
+                    case IdentifierToken:
+                        _Tokens.Add(token);
+                        break;
+                    default: throw new UnexpectedTokenException(token);
+                }
+            }
+
+            return Completed;
         }
     }
 }

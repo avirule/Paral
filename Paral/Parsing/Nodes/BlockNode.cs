@@ -13,7 +13,7 @@ namespace Paral.Parsing.Nodes
                 switch (token)
                 {
                     case KeywordToken<Return>:
-
+                        Branches.Add(new ReturnExpressionNode());
                         break;
                     case GroupToken<Brace, Close>: return true;
                     default: throw new UnexpectedTokenException(token);

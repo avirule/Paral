@@ -7,23 +7,18 @@ using System.Drawing;
 
 namespace Paral.Lexing.Tokens
 {
-    public interface ILiteral { }
-
-    public class Numeric : ILiteral { }
-
-    public class Character : ILiteral { }
-
-    public class String : ILiteral { }
-
-    public interface ILiteralToken
+    public enum Literal
     {
-        public string Value { get; }
+        Numeric,
+        String,
+        Character
     }
 
-    public class LiteralToken<T> : Token, ILiteralToken where T : ILiteral
+    public class LiteralToken : Token
     {
+        public Literal Type { get; }
         public string Value { get; }
 
-        public LiteralToken(Point location, string value) : base(location) => Value = value;
+        public LiteralToken(Point location, Literal type, string value) : base(location) => (Type, Value) = (type, value);
     }
 }
