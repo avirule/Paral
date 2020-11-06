@@ -8,7 +8,8 @@ namespace Paral.Lexing.Tokens
         Subtract,
         Multiply,
         Divide,
-        Assign
+        Assign,
+        Compare
     }
 
     public class OperatorToken : Token

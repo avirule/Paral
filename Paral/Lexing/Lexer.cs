@@ -58,6 +58,8 @@ namespace Paral.Lexing
             else if (TryGetStringFromBuffer(buffer, "*", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Multiply);
             else if (TryGetStringFromBuffer(buffer, "/", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Divide);
             else if (TryGetStringFromBuffer(buffer, "=", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Assign);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.EQUAL, out bytes, out characters))
+                token = new OperatorToken(_Location, Operator.Compare);
 
             // blocks
             else if (TryGetStringFromBuffer(buffer, "(", out bytes, out characters)) token = new GroupToken<Parenthetic, Open>(_Location);

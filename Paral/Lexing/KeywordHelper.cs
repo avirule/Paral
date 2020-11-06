@@ -12,5 +12,7 @@ namespace Paral.Lexing
         public const string IMMUTABLE = "immutable";
         public const string MUTABLE = "mutable";
         public const string RETURN = "return";
+        public const string TYPE_EQUAL = "is";
+        public const string EQUAL = "is equal";
     }
 }
