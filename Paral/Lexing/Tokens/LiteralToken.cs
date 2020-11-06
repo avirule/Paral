@@ -7,11 +7,13 @@ using System.Drawing;
 
 namespace Paral.Lexing.Tokens
 {
-    public interface ILiteral {}
+    public interface ILiteral { }
 
-    public class Numeric : ILiteral {}
-    public class Character : ILiteral {}
-    public class String : ILiteral {}
+    public class Numeric : ILiteral { }
+
+    public class Character : ILiteral { }
+
+    public class String : ILiteral { }
 
     public class LiteralToken<T> : Token where T : ILiteral
     {

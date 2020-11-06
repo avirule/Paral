@@ -54,8 +54,7 @@ namespace Paral
                         }
 
                         break;
-                    default:
-                        throw new Exception($"Invalid argument \"{args[index]}\".");
+                    default: throw new Exception($"Invalid argument \"{args[index]}\".");
                 }
             }
         }

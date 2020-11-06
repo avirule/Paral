@@ -1,6 +1,5 @@
 #region
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -49,10 +48,7 @@ namespace Paral.Parsing.Nodes
 
             while (identities.TryDequeue(out string? identity))
             {
-                if (current.TryFindNamespace(identity, out NamespaceNode? next))
-                {
-                    current = next;
-                }
+                if (current.TryFindNamespace(identity, out NamespaceNode? next)) current = next;
                 else
                 {
                     next = new NamespaceNode(identity);
