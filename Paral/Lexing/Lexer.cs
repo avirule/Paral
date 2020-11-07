@@ -19,35 +19,95 @@ namespace Paral.Lexing
     public class Lexer
     {
         private readonly PipeReader _PipeReader;
+        private readonly List<Token> _TokenBuffer;
 
         private Point _Location;
 
         public Lexer(Stream stream)
         {
             _PipeReader = PipeReader.Create(stream);
+            _TokenBuffer = new List<Token>()
             _Location = new Point(1, 1);
         }
 
         public async IAsyncEnumerable<Token> Tokenize()
         {
             ReadResult result;
+            SequencePosition examined = default;
 
             while (!(result = await _PipeReader.ReadAsync()).IsCompleted)
             {
-                ReadOnlySequence<byte> sequence = result.Buffer;
+                if (examined.GetObject() is null) examined = result.Buffer.Start;
 
-                if (TryReadToken(sequence, out SequencePosition consumed, out Token? token)) yield return token;
+                if (!TryTokenizeLine(result.Buffer, out SequencePosition consumed, ref examined, out List<Token>? tokens))
+                {
+                    _PipeReader.AdvanceTo(result.Buffer.Start, examined);
+                    continue;
+                }
+
+                foreach (Token token in tokens) yield return token;
 
                 _PipeReader.AdvanceTo(consumed);
+                examined = default;
             }
-
-            yield return new EOFToken(_Location);
         }
 
-        private bool TryReadToken(ReadOnlySequence<byte> sequence, out SequencePosition consumed, [NotNullWhen(true)] out Token? token)
+        private bool TryTokenizeLine(ReadOnlySequence<byte> sequence, out SequencePosition consumed, ref SequencePosition examined,
+            [NotNullWhen(true)] out List<Token>? tokens)
         {
-            ReadOnlySpan<byte> buffer = sequence.FirstSpan;
-            consumed = sequence.Start;
+            if (TryFindNewLine(sequence.Slice(examined), out SequencePosition lineEnd))
+            {
+                ReadOnlySequence<byte> slice = sequence.Slice(sequence.Start, lineEnd);
+                Span<byte> buffer = stackalloc byte[(int)slice.Length];
+                slice.CopyTo(buffer);
+
+                int totalBytesConsumed = 0;
+                tokens = new List<Token>();
+
+                while (totalBytesConsumed < buffer.Length)
+                {
+                    bool success = TryReadToken(buffer.Slice(totalBytesConsumed), out int bytesConsumed, out Token? token);
+                    totalBytesConsumed += bytesConsumed;
+
+                    if (success) tokens.Add(token!);
+                }
+
+                consumed = examined = lineEnd;
+                return true;
+            }
+            else
+            {
+                consumed = sequence.Start;
+                examined = sequence.End;
+                tokens = null;
+                return false;
+            }
+        }
+
+        private static bool TryFindNewLine(ReadOnlySequence<byte> sequence, out SequencePosition position)
+        {
+            long totalIndex = 0;
+
+            foreach (ReadOnlyMemory<byte> buffer in sequence)
+            {
+                ReadOnlySpan<byte> span = buffer.Span;
+                int index = span.IndexOf((byte)'\n');
+
+                if (index == -1) totalIndex += index;
+                else
+                {
+                    position = sequence.GetPosition(totalIndex + index + 1);
+                    return true;
+                }
+            }
+
+            position = default;
+            return false;
+        }
+
+        private bool TryReadToken(ReadOnlySpan<byte> buffer, out int bytesConsumed, [NotNullWhen(true)] out Token? token)
+        {
+            bytesConsumed = 0;
             token = null;
 
             if (TryGetStringFromBuffer(buffer, ";", out int bytes, out int characters)) token = new TerminatorToken(_Location);
@@ -77,9 +137,9 @@ namespace Paral.Lexing
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMPLEMENTS, out bytes, out characters)) token = new KeywordToken<Implements>(_Location);
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.STRUCT, out bytes, out characters)) token = new KeywordToken<Struct>(_Location);
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.FUNCTION, out bytes, out characters)) token = new KeywordToken<Function>(_Location);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.MUTABLE, out bytes, out characters)) token = new KeywordToken<Mutable>(_Location);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMMUTABLE, out bytes, out characters)) token = new KeywordToken<Immutable>(_Location);
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.RETURN, out bytes, out characters)) token = new KeywordToken<Return>(_Location);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMMUTABLE, out bytes, out characters)) token = new KeywordToken<Immutable>(_Location);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.MUTABLE, out bytes, out characters)) token = new KeywordToken<Mutable>(_Location);
 
             // literals
             else if (TryCaptureNumericLiteral(buffer, out bytes, out characters, out string? literal))
@@ -91,7 +151,7 @@ namespace Paral.Lexing
             // match against first rune
             else if (TryGetStringFromBuffer(buffer, "\r\n", out bytes, out characters) || TryGetStringFromBuffer(buffer, "\n", out bytes, out characters))
             {
-                consumed = sequence.GetPosition(bytes);
+                bytesConsumed = bytes;
                 _Location.Y += 1;
                 _Location.X = 1;
 
@@ -99,13 +159,15 @@ namespace Paral.Lexing
             }
             else if (TryGetRune(buffer, out Rune rune, out bytes) && Rune.IsWhiteSpace(rune))
             {
-                consumed = sequence.GetPosition(bytes);
+                bytesConsumed = bytes;
 
                 return false;
             }
             else throw new InvalidTokenException(_Location, rune);
 
-            consumed = sequence.GetPosition(bytes);
+            if (token is IdentifierToken { Value: "va" }) { }
+
+            bytesConsumed = bytes;
             _Location.X += characters;
             return true;
         }
