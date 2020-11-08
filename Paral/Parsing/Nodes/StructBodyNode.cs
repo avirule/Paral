@@ -1,3 +1,4 @@
+using Paral.Lexing;
 using Paral.Lexing.Tokens;
 
 namespace Paral.Parsing.Nodes
@@ -9,30 +10,22 @@ namespace Paral.Parsing.Nodes
             if ((Branches.Count > 0) && !Branches[^1].Completed)
             {
                 Branches[^1].ConsumeToken(token);
+
                 return Completed;
             }
 
-            if (_Tokens.Count == 0)
+            switch (token)
             {
-                switch (token)
-                {
-                    case MutabilityToken<Mutable>:
-                    case MutabilityToken<Immutable>: break;
-                }
+                case MutabilityToken<Mutable>:
+                    Branches.Add(new VariableNode<Mutable>());
+                    break;
+                case MutabilityToken<Immutable>:
+                    Branches.Add(new VariableNode<Immutable>());
+                    break;
+                default: throw new UnexpectedTokenException(token);
             }
-            else
-                switch (_Tokens[^1]) { }
 
             return Completed;
         }
-    }
-
-    public class VariableNode<TMutability> : Node where TMutability : IMutability
-    {
-
-        public string? RuntimeType { get; private set; } // todo type check
-        public
-
-        protected override bool ConsumeTokenInternal(Token token) { }
     }
 }

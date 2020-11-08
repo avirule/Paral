@@ -7,10 +7,14 @@ namespace Paral.Parsing.Nodes
     {
         protected override bool ConsumeTokenInternal(Token token)
         {
-            if ((Branches.Count > 0) && !Branches[^1].Completed) Branches[^1].ConsumeToken(token);
-            else
+            if ((Branches.Count > 0) && !Branches[^1].Completed)
             {
-                switch (token)
+                Branches[^1].ConsumeToken(token);
+
+                return Completed;
+            }
+
+            switch (token)
                 {
                     case KeywordToken<Return>:
                         Branches.Add(new ReturnExpressionNode());
@@ -18,9 +22,8 @@ namespace Paral.Parsing.Nodes
                     case GroupToken<Brace, Close>: return true;
                     default: throw new UnexpectedTokenException(token);
                 }
-            }
 
-            return Completed;
+                return Completed;
         }
     }
 }
