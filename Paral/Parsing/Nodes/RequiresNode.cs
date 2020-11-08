@@ -17,24 +17,20 @@ namespace Paral.Parsing.Nodes
                 {
                     case SeparatorToken<Path>:
                         Expect<IdentifierToken>(token);
+
                         _Tokens.Add(token);
                         break;
                     case IdentifierToken:
                         Expect(token, typeof(SeparatorToken<Path>), typeof(TerminatorToken));
 
-                        switch (token)
-                        {
-                            case SeparatorToken<Path>:
-                                _Tokens.Add(token);
-                                break;
-                            case TerminatorToken: return true;
-                        }
+                        if (token is SeparatorToken<Path>) _Tokens.Add(token);
+                        else if (token is TerminatorToken) return true;
 
-                        return false;
+                        break;
                 }
             }
 
-            return false;
+            return Completed;
         }
     }
 }

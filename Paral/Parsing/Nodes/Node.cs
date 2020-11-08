@@ -20,8 +20,8 @@ namespace Paral.Parsing.Nodes
 
         public Node() => _Tokens = new List<Token>();
 
+        protected void MarkCompleted() => Completed = true;
         public bool ConsumeToken(Token token) => Completed = ConsumeTokenInternal(token);
-
         protected abstract bool ConsumeTokenInternal(Token token);
 
         protected static void Expect<TExpected>(Token actual) where TExpected : Token
@@ -67,5 +67,12 @@ namespace Paral.Parsing.Nodes
             namespaceNode = Branches.SingleOrDefault(node => node is NamespaceNode current && current.Identity.Equals(identity)) as NamespaceNode;
             return namespaceNode is not null;
         }
+    }
+
+    public abstract class LeafNode : Node
+    {
+        protected LeafNode() => MarkCompleted();
+
+        protected override bool ConsumeTokenInternal(Token token) => Completed;
     }
 }

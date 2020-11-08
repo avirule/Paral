@@ -4,5 +4,6 @@ namespace Standard::Test::Test2::Test3;
 
 struct TestStruct
 {
-
+    immutable i32 TestInt = 5;
+    mutable i32 TestInt2 = 5;
 }

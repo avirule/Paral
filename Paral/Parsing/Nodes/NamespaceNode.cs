@@ -33,7 +33,7 @@ namespace Paral.Parsing.Nodes
                 }
             }
 
-            return false;
+            return Completed;
         }
     }
 }

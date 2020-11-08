@@ -16,6 +16,7 @@ namespace Paral.Parsing.Nodes
             {
                 Expect<IdentifierToken>(token);
                 TypeIdentifier = (token as IdentifierToken)!.Value;
+
                 return false;
             }
             else if (Identifier is null)
@@ -60,7 +61,7 @@ namespace Paral.Parsing.Nodes
                 }
             }
 
-            return false;
+            return Completed;
         }
     }
 }

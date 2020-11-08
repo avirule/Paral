@@ -3,7 +3,7 @@ using Paral.Lexing.Tokens;
 
 namespace Paral.Parsing.Nodes
 {
-    public class BlockNode : BranchNode
+    public class FunctionBodyNode : BranchNode
     {
         protected override bool ConsumeTokenInternal(Token token)
         {

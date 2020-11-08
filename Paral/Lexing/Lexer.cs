@@ -26,7 +26,7 @@ namespace Paral.Lexing
         public Lexer(Stream stream)
         {
             _PipeReader = PipeReader.Create(stream);
-            _TokenBuffer = new List<Token>()
+            _TokenBuffer = new List<Token>();
             _Location = new Point(1, 1);
         }
 
@@ -138,8 +138,8 @@ namespace Paral.Lexing
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.STRUCT, out bytes, out characters)) token = new KeywordToken<Struct>(_Location);
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.FUNCTION, out bytes, out characters)) token = new KeywordToken<Function>(_Location);
             else if (TryGetStringFromBuffer(buffer, KeywordHelper.RETURN, out bytes, out characters)) token = new KeywordToken<Return>(_Location);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMMUTABLE, out bytes, out characters)) token = new KeywordToken<Immutable>(_Location);
-            else if (TryGetStringFromBuffer(buffer, KeywordHelper.MUTABLE, out bytes, out characters)) token = new KeywordToken<Mutable>(_Location);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.IMMUTABLE, out bytes, out characters)) token = new MutabilityToken<Immutable>(_Location);
+            else if (TryGetStringFromBuffer(buffer, KeywordHelper.MUTABLE, out bytes, out characters)) token = new MutabilityToken<Mutable>(_Location);
 
             // literals
             else if (TryCaptureNumericLiteral(buffer, out bytes, out characters, out string? literal))

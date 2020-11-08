@@ -7,7 +7,7 @@ namespace Paral.Parsing.Nodes
         public string? Identifier { get; private set; }
         public string? ReturnType { get; private set; } // todo type check
         public ParametersNode? Parameters { get; private set; }
-        public BlockNode? Body { get; private set; }
+        public FunctionBodyNode? Body { get; private set; }
 
         protected override bool ConsumeTokenInternal(Token token)
         {
@@ -30,7 +30,7 @@ namespace Paral.Parsing.Nodes
             else if (Body is null)
             {
                 Expect<GroupToken<Brace, Open>>(token);
-                Body = new BlockNode();
+                Body = new FunctionBodyNode();
             }
             else if (!Body.Completed) return Body.ConsumeToken(token);
 

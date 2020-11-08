@@ -5,7 +5,7 @@ namespace Paral.Parsing.Nodes
     public class StructNode : Node
     {
         public string? Identifier { get; private set; } // todo type check
-        public BlockNode? Body { get; private set; }
+        public StructBodyNode? Body { get; private set; }
 
         protected override bool ConsumeTokenInternal(Token token)
         {
@@ -19,7 +19,7 @@ namespace Paral.Parsing.Nodes
             {
                 Expect<GroupToken<Brace, Open>>(token);
 
-                Body = new BlockNode();
+                Body = new StructBodyNode();
             }
             else if (!Body.Completed) return Body.ConsumeToken(token);
 
