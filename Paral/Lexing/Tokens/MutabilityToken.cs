@@ -2,14 +2,16 @@ using System.Drawing;
 
 namespace Paral.Lexing.Tokens
 {
-    public interface IMutability { }
-
-    public class Mutable : IMutability { }
-
-    public class Immutable : IMutability { }
-
-    public class MutabilityToken<TMutability> : Token where TMutability : IMutability
+    public enum Mutability
     {
-        public MutabilityToken(Point location) : base(location) { }
+        Immutable,
+        Mutable
+    }
+
+    public class MutabilityToken : Token
+    {
+        public Mutability Mutability { get; }
+
+        public MutabilityToken(Point location, Mutability mutability) : base(location) => Mutability = mutability;
     }
 }

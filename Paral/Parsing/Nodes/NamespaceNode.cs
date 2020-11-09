@@ -1,4 +1,5 @@
 using Paral.Lexing.Tokens;
+using Paral.Parsing.Nodes.Functions;
 
 namespace Paral.Parsing.Nodes
 {

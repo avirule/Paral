@@ -9,7 +9,8 @@ namespace Paral.Lexing.Tokens
         Multiply,
         Divide,
         Assign,
-        Compare
+        Compare,
+        TypeCompare
     }
 
     public class OperatorToken : Token

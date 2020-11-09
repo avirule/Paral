@@ -36,6 +36,8 @@ namespace Paral.Parsing.Nodes
             Type actualType = actual.GetType();
             if (!required.Any(actualType.IsAssignableFrom)) throw new ExpectedTokenException(required[0], actual);
         }
+
+        protected bool LastSavedTokenIs<T>() where T : Token => _Tokens.Count > 0 && _Tokens[^1] is T;
     }
 
     public abstract class BranchNode : Node

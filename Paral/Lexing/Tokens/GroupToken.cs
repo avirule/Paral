@@ -11,7 +11,7 @@ namespace Paral.Lexing.Tokens
 
     public interface IIntent { }
 
-    public class Parenthetic : IGrouping { }
+    public class Paren : IGrouping { }
 
     public class Bracket : IGrouping { }
 

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Paral.Lexing;
 using Paral.Lexing.Tokens;
+using Paral.Parsing.Nodes;
 
-namespace Paral.Parsing.Nodes
+namespace Paral.Parsing
 {
     public class Module : BranchNode
     {
@@ -38,8 +39,7 @@ namespace Paral.Parsing.Nodes
                                 IEnumerable<string> identifiers = _Tokens.Where(tok => tok is IdentifierToken)
                                     .Select(tok => (tok as IdentifierToken)!.Value);
 
-                                Queue<string> queue = new Queue<string>(identifiers);
-                                _CurrentNamespace = FindOrCreateNamespace(queue);
+                                _CurrentNamespace = FindOrCreateNamespace(new Queue<string>(identifiers));
                                 _Tokens.Clear();
                                 break;
                         }

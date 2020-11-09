@@ -16,11 +16,8 @@ namespace Paral.Parsing.Nodes
 
             switch (token)
             {
-                case MutabilityToken<Mutable>:
-                    Branches.Add(new VariableNode<Mutable>());
-                    break;
-                case MutabilityToken<Immutable>:
-                    Branches.Add(new VariableNode<Immutable>());
+                case MutabilityToken mutabilityToken:
+                    Branches.Add(new VariableNode(mutabilityToken.Mutability));
                     break;
                 default: throw new UnexpectedTokenException(token);
             }

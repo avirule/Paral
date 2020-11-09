@@ -1,6 +1,6 @@
 using Paral.Lexing.Tokens;
 
-namespace Paral.Parsing.Nodes
+namespace Paral.Parsing.Nodes.Functions
 {
     public class FunctionNode : Node
     {
@@ -23,7 +23,7 @@ namespace Paral.Parsing.Nodes
             }
             else if (Parameters is null)
             {
-                Expect<GroupToken<Parenthetic, Open>>(token);
+                Expect<GroupToken<Paren, Open>>(token);
                 Parameters = new ParametersNode();
             }
             else if (!Parameters.Completed) Parameters.ConsumeToken(token);

@@ -2,13 +2,16 @@ using System.Collections.Generic;
 using Paral.Lexing;
 using Paral.Lexing.Tokens;
 
-namespace Paral.Parsing.Nodes
+namespace Paral.Parsing.Nodes.Functions
 {
     public class ParameterNode : Node
     {
+        public Mutability Mutability { get; }
         public string? TypeIdentifier { get; private set; }
         public string? Identifier { get; private set; }
         public bool Separated { get; set; }
+
+        public ParameterNode(Mutability mutability) => Mutability = mutability;
 
         protected override bool ConsumeTokenInternal(Token token)
         {
@@ -38,27 +41,32 @@ namespace Paral.Parsing.Nodes
 
         protected override bool ConsumeTokenInternal(Token token)
         {
-            if ((Parameters.Count > 0) && !Parameters[^1].Completed) Parameters[^1].ConsumeToken(token);
-            else
+            switch (Parameters.Count)
             {
-                if ((Parameters.Count == 0) || Parameters[^1].Separated)
-                {
-                    Expect<IdentifierToken>(token);
-                    Parameters.Add(new ParameterNode());
-                    Parameters[^1].ConsumeToken(token);
-                }
-                else
-                {
-                    Expect(token, typeof(GroupToken<Parenthetic, Close>), typeof(SeparatorToken<Comma>));
+                case 0:
+                    Expect<MutabilityToken>(token);
+                    Parameters.Add(new ParameterNode((token as MutabilityToken)!.Mutability));
+                    break;
 
+                case > 0 when !Parameters[^1].Completed:
+                    Parameters[^1].ConsumeToken(token);
+                    break;
+
+                default:
                     switch (token)
                     {
-                        case SeparatorToken<Comma> when !Parameters[^1].Separated:
-                            Parameters[^1].Separated = true;
+                        case MutabilityToken mutabilityToken when LastSavedTokenIs<SeparatorToken<Comma>>():
+                            Parameters.Add(new ParameterNode(mutabilityToken.Mutability));
+                            _Tokens.Clear();
                             break;
-                        case GroupToken<Parenthetic, Close> when !Parameters[^1].Separated: return true;
+                        case SeparatorToken<Comma> when _Tokens.Count == 0:
+                            _Tokens.Add(token);
+                            break;
+                        case GroupToken<Paren, Close> when _Tokens.Count == 0: return true;
+                        default: throw new UnexpectedTokenException(token);
                     }
-                }
+
+                    break;
             }
 
             return Completed;

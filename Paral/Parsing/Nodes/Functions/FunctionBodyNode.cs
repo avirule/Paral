@@ -1,7 +1,7 @@
 using Paral.Lexing;
 using Paral.Lexing.Tokens;
 
-namespace Paral.Parsing.Nodes
+namespace Paral.Parsing.Nodes.Functions
 {
     public class FunctionBodyNode : BranchNode
     {
