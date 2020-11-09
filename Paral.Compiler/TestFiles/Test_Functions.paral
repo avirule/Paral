@@ -1,0 +1,13 @@
+namespace Standard;
+
+function i32 Add(imm i32 val1, imm i32 val2)
+{
+    return 2 + 2;
+}
+
+namespace Standard::IO;
+
+function FileReader LoadFile(imm string filePath)
+{
+
+}

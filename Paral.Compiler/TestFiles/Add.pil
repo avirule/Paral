@@ -1,0 +1,23 @@
+function DWORD Add(imm DWORD val1, imm DWORD val2):
+    .stacksize 0 // everything is in registers, so stack is unused
+
+    // load values into argument registers
+    load %arga val1
+    load %argb val2
+
+    add
+
+    // load result into return register
+    load %argr %arga
+
+    ret
+end
+
+// compiles to NASM:
+Add:
+    mov eax, rcx
+    mov ebx, rdx
+    add
+
+    mov rax, ecx
+    ret
