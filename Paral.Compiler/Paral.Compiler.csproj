@@ -48,13 +48,10 @@
       <None Update="TestFiles\Test_Structs.paral">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="JIT\testfile.bin">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="AOT" />
+      <Folder Include="Compiling" />
     </ItemGroup>
 
 </Project>

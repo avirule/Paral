@@ -1,5 +1,6 @@
 function DWORD Add(imm DWORD val1, imm DWORD val2):
-    .stacksize 0 // everything is in registers, so stack is unused
+    // everything is in registers, so stack is unused
+    .stacksize 0
 
     // load values into argument registers
     load %arga val1
