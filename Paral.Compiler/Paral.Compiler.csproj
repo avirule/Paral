@@ -5,25 +5,17 @@
         <TargetFramework>net5.0</TargetFramework>
         <Nullable>enable</Nullable>
         <LangVersion>9</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
       <Content Include="..\.gitignore">
         <Link>.gitignore</Link>
       </Content>
-      <Content Include="bin\Debug\netcoreapp3.1\Paral.deps.json" />
-      <Content Include="bin\Debug\netcoreapp3.1\Paral.dll" />
-      <Content Include="bin\Debug\netcoreapp3.1\Paral.exe" />
-      <Content Include="bin\Debug\netcoreapp3.1\Paral.pdb" />
-      <Content Include="bin\Debug\netcoreapp3.1\Paral.runtimeconfig.dev.json" />
-      <Content Include="bin\Debug\netcoreapp3.1\Paral.runtimeconfig.json" />
-      <Content Include="bin\Debug\netcoreapp3.1\Serilog.dll" />
-      <Content Include="bin\Debug\netcoreapp3.1\Serilog.Sinks.Console.dll" />
-      <Content Include="bin\Debug\netcoreapp3.1\Test.paral" />
-      <Content Include="bin\Debug\netcoreapp3.1\Test.paral" />
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Iced" Version="1.9.0" />
       <PackageReference Include="LLVMSharp" Version="5.0.0" />
       <PackageReference Include="Serilog" Version="2.9.0" />
       <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
@@ -32,7 +24,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="bin\Debug\netcoreapp3.1\Test_Heavy.paral" />
       <None Update="TestFiles\Test_Heavy.paral">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
@@ -48,6 +39,13 @@
       <None Update="TestFiles\Test_Structs.paral">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="References\fasmg.exe">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="References" />
     </ItemGroup>
 
 </Project>

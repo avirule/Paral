@@ -17,14 +17,17 @@ struct FileReader
     implements IStream, IBuffer;
 
     immutable DEFAULT_STREAM_POSITION i32 = -1;
-    mutable StreamPosition i32 = DEFAULT_STREAM_POSITION;
 
-    construct FileReader
+    mutable StreamPosition i32 = DEFAULT_STREAM_POSITION;
+    immutable Buffer byte[];
+
+    construct(size word)
     {
         StreamPosition = 1;
+        Buffer = halloc[size];
     }
 
-    deconstruct FileReader
+    deconstruct()
     {
         StreamPosition = DEFAULT_STREAM_POSITION;
     }
@@ -32,7 +35,7 @@ struct FileReader
 
 function ReadByte(reader FileReader) i8
 {
-    throws IOException, BufferOverflowException;
+    fails IOFailure, BufferOverflowFailure;
 
     immutable read = reader.Buffer[reader.StreamPosition];
     mutable reader.StreamPosition += 1;

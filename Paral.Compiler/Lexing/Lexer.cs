@@ -1,175 +1,94 @@
-#region
-
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
-using System.IO.Pipelines;
 using System.Text;
 using Paral.Compiler.Lexing.Tokens;
 using Path = Paral.Compiler.Lexing.Tokens.Path;
-
-#endregion
-
 
 namespace Paral.Compiler.Lexing
 {
     public class Lexer
     {
-        private readonly PipeReader _PipeReader;
-        private readonly List<Token> _TokenBuffer;
+        private readonly StreamReader _Reader;
 
         private Point _Location;
 
         public Lexer(Stream stream)
         {
-            _PipeReader = PipeReader.Create(stream);
-            _TokenBuffer = new List<Token>();
+            _Reader = new StreamReader(stream);
             _Location = new Point(1, 1);
         }
 
         public async IAsyncEnumerable<Token> Tokenize()
         {
-            ReadResult result;
-            SequencePosition examined = default;
-
-            while (!(result = await _PipeReader.ReadAsync()).IsCompleted)
+            while (!_Reader.EndOfStream)
             {
-                ReadOnlySequence<byte> sequence = result.Buffer;
+                string? line = await _Reader.ReadLineAsync();
 
-                if (examined.GetObject() is null) examined = sequence.Start;
+                if (line is null) throw new InvalidOperationException(nameof(line));
 
-                if (TryFindEndOfLine(sequence, out SequencePosition lineEnd))
-                    foreach (Token token in TokenizeLine(sequence.Slice(sequence.Start, lineEnd)))
-                        yield return token;
-                else
-                {
-                    _PipeReader.AdvanceTo(sequence.Start, sequence.End);
-                    continue;
-                }
-
-                _PipeReader.AdvanceTo(lineEnd);
-                examined = default;
+                foreach (Token token in TokenizeLine(line)) yield return token;
             }
         }
 
-        private IEnumerable<Token> TokenizeLine(ReadOnlySequence<byte> sequence)
+        private IEnumerable<Token> TokenizeLine(string line)
         {
-            using IMemoryOwner<byte> bufferOwner = MemoryPool<byte>.Shared.Rent((int)sequence.Length);
-            Memory<byte> bufferMemory = bufferOwner.Memory;
-            sequence.CopyTo(bufferMemory.Span);
-
-            int bytesConsumed = 0;
-
-            for (int index = 0; index < sequence.Length; index += bytesConsumed)
-                if (TryReadToken(bufferMemory.Slice(index), out bytesConsumed, out Token? token))
+            for (int index = 0, bytesConsumed; index < line.Length; index += bytesConsumed)
+                if (TryReadToken(line.Substring(index), out bytesConsumed, out Token? token))
                     yield return token;
         }
 
-        // private bool TryTokenizeLine(ReadOnlySequence<byte> sequence, out SequencePosition consumed, ref SequencePosition examined,
-        //     [NotNullWhen(true)] out List<Token>? tokens)
-        // {
-        //     if (TryFindNewLine(sequence.Slice(examined), out SequencePosition lineEnd))
-        //     {
-        //         ReadOnlySequence<byte> slice = sequence.Slice(sequence.Start, lineEnd);
-        //         Span<byte> buffer = stackalloc byte[(int)slice.Length];
-        //         slice.CopyTo(buffer);
-        //
-        //         int totalBytesConsumed = 0;
-        //         tokens = new List<Token>();
-        //
-        //         while (totalBytesConsumed < buffer.Length)
-        //         {
-        //             bool success = TryReadToken(buffer.Slice(totalBytesConsumed), out int bytesConsumed, out Token? token);
-        //             totalBytesConsumed += bytesConsumed;
-        //
-        //             if (success) tokens.Add(token!);
-        //         }
-        //
-        //         consumed = examined = lineEnd;
-        //         return true;
-        //     }
-        //     else
-        //     {
-        //         consumed = sequence.Start;
-        //         examined = sequence.End;
-        //         tokens = null;
-        //         return false;
-        //     }
-        // }
-
-        private static bool TryFindEndOfLine(ReadOnlySequence<byte> sequence, [MaybeNullWhen(false)] out SequencePosition position)
+        private bool TryReadToken(string line, out int bytesConsumed, [NotNullWhen(true)] out Token? token)
         {
-            long totalIndex = 0;
-
-            foreach (ReadOnlyMemory<byte> buffer in sequence)
-            {
-                int index = buffer.Span.IndexOf((byte)'\n');
-
-                if (index == -1) totalIndex += buffer.Length;
-                else
-                {
-                    position = sequence.GetPosition(totalIndex + index + 1);
-                    return true;
-                }
-            }
-
-            position = default;
-            return false;
-        }
-
-        private bool TryReadToken(ReadOnlyMemory<byte> bufferMemory, out int bytesConsumed, [NotNullWhen(true)] out Token? token)
-        {
-            ReadOnlySpan<byte> buffer = bufferMemory.Span;
             bytesConsumed = 0;
             token = null;
 
             // terminator
-            if (TryGetStringFromBuffer(buffer, ";", out int bytes, out int characters)) token = new TerminatorToken(_Location);
+            if (TryGetStringFromBuffer(line, ";", out int bytes, out int characters)) token = new TerminatorToken(_Location);
 
             // operators
-            else if (TryGetStringFromBuffer(buffer, "+", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Add);
-            else if (TryGetStringFromBuffer(buffer, "-", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Subtract);
-            else if (TryGetStringFromBuffer(buffer, "*", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Multiply);
-            else if (TryGetStringFromBuffer(buffer, "/", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Divide);
-            else if (TryGetStringFromBuffer(buffer, "=", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Assign);
-            else if (TryGetStringFromBuffer(buffer, "equal", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Compare);
-            else if (TryGetStringFromBuffer(buffer, "is", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Compare);
+            else if (TryGetStringFromBuffer(line, "+", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Add);
+            else if (TryGetStringFromBuffer(line, "-", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Subtract);
+            else if (TryGetStringFromBuffer(line, "*", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Multiply);
+            else if (TryGetStringFromBuffer(line, "/", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Divide);
+            else if (TryGetStringFromBuffer(line, "=", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Assign);
+            else if (TryGetStringFromBuffer(line, "equal", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Compare);
+            else if (TryGetStringFromBuffer(line, "is", out bytes, out characters)) token = new OperatorToken(_Location, Operator.Compare);
 
             // blocks
-            else if (TryGetStringFromBuffer(buffer, "(", out bytes, out characters)) token = new GroupToken<Paren, Open>(_Location);
-            else if (TryGetStringFromBuffer(buffer, ")", out bytes, out characters)) token = new GroupToken<Paren, Close>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "{", out bytes, out characters)) token = new GroupToken<Brace, Open>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "}", out bytes, out characters)) token = new GroupToken<Brace, Close>(_Location);
+            else if (TryGetStringFromBuffer(line, "(", out bytes, out characters)) token = new GroupToken<Paren, Open>(_Location);
+            else if (TryGetStringFromBuffer(line, ")", out bytes, out characters)) token = new GroupToken<Paren, Close>(_Location);
+            else if (TryGetStringFromBuffer(line, "{", out bytes, out characters)) token = new GroupToken<Brace, Open>(_Location);
+            else if (TryGetStringFromBuffer(line, "}", out bytes, out characters)) token = new GroupToken<Brace, Close>(_Location);
 
             // separators
-            else if (TryGetStringFromBuffer(buffer, "::", out bytes, out characters)) token = new SeparatorToken<Tokens.Path>(_Location);
-            else if (TryGetStringFromBuffer(buffer, ".", out bytes, out characters)) token = new SeparatorToken<Member>(_Location);
-            else if (TryGetStringFromBuffer(buffer, ",", out bytes, out characters)) token = new SeparatorToken<Comma>(_Location);
+            else if (TryGetStringFromBuffer(line, "::", out bytes, out characters)) token = new SeparatorToken<Path>(_Location);
+            else if (TryGetStringFromBuffer(line, ".", out bytes, out characters)) token = new SeparatorToken<Member>(_Location);
+            else if (TryGetStringFromBuffer(line, ",", out bytes, out characters)) token = new SeparatorToken<Comma>(_Location);
 
             // keywords
-            else if (TryGetStringFromBuffer(buffer, "requires", out bytes, out characters)) token = new KeywordToken<Requires>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "namespace", out bytes, out characters)) token = new KeywordToken<Namespace>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "implements", out bytes, out characters)) token = new KeywordToken<Implements>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "struct", out bytes, out characters)) token = new KeywordToken<Struct>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "function", out bytes, out characters)) token = new KeywordToken<Function>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "return", out bytes, out characters)) token = new KeywordToken<Return>(_Location);
-            else if (TryGetStringFromBuffer(buffer, "immutable", out bytes, out characters)
-                     || TryGetStringFromBuffer(buffer, "imm", out bytes, out characters)) token = new MutabilityToken(_Location, Mutability.Immutable);
-            else if (TryGetStringFromBuffer(buffer, "mutable", out bytes, out characters)
-                     || TryGetStringFromBuffer(buffer, "mut", out bytes, out characters)) token = new MutabilityToken(_Location, Mutability.Mutable);
+            else if (TryGetStringFromBuffer(line, "requires", out bytes, out characters)) token = new KeywordToken<Requires>(_Location);
+            else if (TryGetStringFromBuffer(line, "namespace", out bytes, out characters)) token = new KeywordToken<Namespace>(_Location);
+            else if (TryGetStringFromBuffer(line, "implements", out bytes, out characters)) token = new KeywordToken<Implements>(_Location);
+            else if (TryGetStringFromBuffer(line, "struct", out bytes, out characters)) token = new KeywordToken<Struct>(_Location);
+            else if (TryGetStringFromBuffer(line, "function", out bytes, out characters)) token = new KeywordToken<Function>(_Location);
+            else if (TryGetStringFromBuffer(line, "return", out bytes, out characters)) token = new KeywordToken<Return>(_Location);
+            else if (TryGetStringFromBuffer(line, "immutable", out bytes, out characters)
+                     || TryGetStringFromBuffer(line, "imm", out bytes, out characters)) token = new MutabilityToken(_Location, Mutability.Immutable);
+            else if (TryGetStringFromBuffer(line, "mutable", out bytes, out characters)
+                     || TryGetStringFromBuffer(line, "mut", out bytes, out characters)) token = new MutabilityToken(_Location, Mutability.Mutable);
 
             // literals
-            else if (TryCaptureNumericLiteral(buffer, out bytes, out characters, out string? literal))
+            else if (TryCaptureNumericLiteral(line, out bytes, out characters, out string? literal))
                 token = new LiteralToken(_Location, Literal.Numeric, literal);
 
             // identifier
-            else if (TryCaptureAlphanumeric(buffer, out bytes, out characters, out string? alphanumeric)) token = new IdentifierToken(_Location, alphanumeric);
+            else if (TryCaptureAlphanumeric(line, out bytes, out characters, out string? alphanumeric)) token = new IdentifierToken(_Location, alphanumeric);
 
             // match against first rune
-            else if (TryGetStringFromBuffer(buffer, "\r\n", out bytes, out characters) || TryGetStringFromBuffer(buffer, "\n", out bytes, out characters))
+            else if (TryGetStringFromBuffer(line, "\r\n", out bytes, out characters) || TryGetStringFromBuffer(line, "\n", out bytes, out characters))
             {
                 bytesConsumed = bytes;
                 _Location.Y += 1;
@@ -177,7 +96,7 @@ namespace Paral.Compiler.Lexing
 
                 return false;
             }
-            else if (TryGetRune(buffer, out Rune rune, out bytes) && Rune.IsWhiteSpace(rune))
+            else if (TryGetRune(line, out Rune rune, out bytes) && Rune.IsWhiteSpace(rune))
             {
                 bytesConsumed = bytes;
 
@@ -190,61 +109,76 @@ namespace Paral.Compiler.Lexing
             return true;
         }
 
-        private static bool TryGetStringFromBuffer(ReadOnlySpan<byte> buffer, string str, out int bytes, out int characters)
+        private static bool TryGetStringFromBuffer(string line, string query, out int bytes, out int characters)
         {
             bytes = 0;
             characters = 0;
 
-            foreach (Rune rune in str.EnumerateRunes())
+            StringRuneEnumerator lineEnumerator = line.EnumerateRunes();
+            StringRuneEnumerator queryEnumerator = query.EnumerateRunes();
+
+            while (queryEnumerator.MoveNext() && lineEnumerator.MoveNext())
             {
-                if ((buffer.Length > bytes)
-                    && (Rune.DecodeFromUtf8(buffer.Slice(bytes), out Rune result, out int readBytes) == OperationStatus.Done)
-                    && (rune == result))
+                Rune queryEnumeratorCurrent = queryEnumerator.Current;
+                Rune lineEnumeratorCurrent = lineEnumerator.Current;
+
+                if (!queryEnumeratorCurrent.Equals(lineEnumeratorCurrent)) return false;
+                else
                 {
-                    bytes += readBytes;
+                    bytes += queryEnumeratorCurrent.Utf8SequenceLength;
                     characters += 1;
                 }
-                else return false;
             }
 
             return true;
         }
 
-        private static bool TryCaptureAlphanumeric(ReadOnlySpan<byte> buffer, out int bytes, out int characters,
-            [NotNullWhen(true)] out string? alphanumeric) => TryCaptureContinuous(buffer, Rune.IsLetterOrDigit, out bytes, out characters, out alphanumeric);
+        private static bool TryCaptureAlphanumeric(string line, out int bytes, out int characters,
+            [NotNullWhen(true)] out string? alphanumeric) => TryCaptureContinuous(line, Rune.IsLetterOrDigit, out bytes, out characters, out alphanumeric);
 
-        private static bool TryCaptureNumericLiteral(ReadOnlySpan<byte> buffer, out int bytes, out int characters, [NotNullWhen(true)] out string? literal) =>
-            TryCaptureContinuous(buffer, rune => Rune.IsDigit(rune) || rune.Equals((Rune)'.'), out bytes, out characters, out literal);
+        private static bool TryCaptureNumericLiteral(string line, out int bytes, out int characters, [NotNullWhen(true)] out string? literal) =>
+            TryCaptureContinuous(line, rune => Rune.IsDigit(rune) || rune.Equals((Rune)'.'), out bytes, out characters, out literal);
 
-        private static bool TryCaptureContinuous(ReadOnlySpan<byte> buffer, Predicate<Rune> condition, out int bytes, out int characters,
+        private static bool TryCaptureContinuous(string line, Predicate<Rune> condition, out int bytes, out int characters,
             [NotNullWhen(true)] out string? captured)
         {
             captured = null;
             bytes = characters = 0;
 
-            while ((Rune.DecodeFromUtf8(buffer.Slice(bytes), out Rune rune, out int bytesConsumed) == OperationStatus.Done) && condition(rune))
+            StringRuneEnumerator lineEnumerator = line.EnumerateRunes();
+
+            while (lineEnumerator.MoveNext())
             {
-                bytes += bytesConsumed;
-                characters += 1;
+                Rune lineEnumeratorCurrent = lineEnumerator.Current;
+
+                if (condition(lineEnumeratorCurrent))
+                {
+                    bytes += lineEnumeratorCurrent.Utf8SequenceLength;
+                    characters += 1;
+                }
+                else break;
             }
 
             if (bytes > 0)
             {
-                captured = Encoding.UTF8.GetString(buffer.Slice(0, bytes));
+                captured = line.Substring(0, characters);
                 return true;
             }
             else return false;
         }
 
-        private bool TryGetRune(ReadOnlySpan<byte> buffer, out Rune rune, out int bytes)
+        private static bool TryGetRune(string line, out Rune rune, out int bytes)
         {
-            if (Rune.DecodeFromUtf8(buffer, out rune, out bytes) == OperationStatus.Done)
+            foreach (Rune enumerateRune in line.EnumerateRunes())
             {
-                _Location.X += 1;
-
+                rune = enumerateRune;
+                bytes = enumerateRune.Utf8SequenceLength;
                 return true;
             }
-            else return false;
+
+            rune = default;
+            bytes = default;
+            return false;
         }
     }
 }
